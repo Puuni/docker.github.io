@@ -27,7 +27,7 @@ Docker Toolbox includes the following Docker tools:
 Because the Docker Engine daemon uses Linux-specific
 kernel features, you can't run Docker Engine natively on
 macOS with Docker Toolbox. Instead, you must use the
-Docker Machine command,  `docker-machine`,  to create and
+Docker Machine command, `docker-machine`, to create and
 attach to a small Linux VM on your machine. This VM hosts
 Docker Engine for you on your Mac.
 
@@ -118,33 +118,35 @@ Virtual Box VM, it maintains its configuration between uses.
 
     The terminal does a number of things to set up Docker Quickstart Terminal for you.
 
-        Last login: Sat Jul 11 20:09:45 on ttys002
-        bash '/Applications/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'
-        Get http:///var/run/docker.sock/v1.19/images/json?all=1&filters=%7B%22dangling%22%3A%5B%22true%22%5D%7D: dial unix /var/run/docker.sock: no such file or directory. Are you trying to connect to a TLS-enabled daemon without TLS?
-        Get http:///var/run/docker.sock/v1.19/images/json?all=1: dial unix /var/run/docker.sock: no such file or directory. Are you trying to connect to a TLS-enabled daemon without TLS?
-        -bash: lolcat: command not found
+    ```
+    Last login: Sat Jul 11 20:09:45 on ttys002
+    bash '/Applications/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'
+    Get http:///var/run/docker.sock/v1.19/images/json?all=1&filters=%7B%22dangling%22%3A%5B%22true%22%5D%7D: dial unix /var/run/docker.sock: no such file or directory. Are you trying to connect to a TLS-enabled daemon without TLS?
+    Get http:///var/run/docker.sock/v1.19/images/json?all=1: dial unix /var/run/docker.sock: no such file or directory. Are you trying to connect to a TLS-enabled daemon without TLS?
+    -bash: lolcat: command not found
 
-        mary at meepers in ~
-        $ bash '/Applications/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'
-        Creating Machine dev...
-        Creating VirtualBox VM...
-        Creating SSH key...
-        Starting VirtualBox VM...
-        Starting VM...
-        To see how to connect Docker to this machine, run: docker-machine env dev
-        Starting machine dev...
-        Setting environment variables for machine dev...
+    mary at meepers in ~
+    $ bash '/Applications/Docker Quickstart Terminal.app/Contents/Resources/Scripts/start.sh'
+    Creating Machine dev...
+    Creating VirtualBox VM...
+    Creating SSH key...
+    Starting VirtualBox VM...
+    Starting VM...
+    To see how to connect Docker to this machine, run: docker-machine env dev
+    Starting machine dev...
+    Setting environment variables for machine dev...
 
-                                ##         .
-                          ## ## ##        ==
-                       ## ## ## ## ##    ===
-                   /"""""""""""""""""\___/ ===
-              ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
-                   \______ o           __/
-                     \    \         __/
-                      \____\_______/
+                            ##         .
+                      ## ## ##        ==
+                   ## ## ## ## ##    ===
+               /"""""""""""""""""\___/ ===
+          ~~~ {~~ ~~~~ ~~~ ~~~~ ~~~ ~ /  ===- ~~~
+               \______ o           __/
+                 \    \         __/
+                  \____\_______/
 
-        The Docker Quick Start Terminal is configured to use Docker with the "default" VM.
+    The Docker Quick Start Terminal is configured to use Docker with the "default" VM.
+    ```
 
 3.  Click your mouse in the terminal window to make it active.
 
@@ -190,13 +192,56 @@ Virtual Box VM, it maintains its configuration between uses.
         For more examples and ideas, visit:
         https://docs.docker.com/userguide/
 
+## Optional: Add shared directories
+
+By default, Toolbox only has access to the `/Users` directory and mounts it into
+the VMs at `/Users`. If your project lives elsewhere or needs access to other
+directories on the host filesystem, you can add them.
+
+### Use the VirtualBox GUI
+
+You can configure shared folders in the VirtualBox UI.
+
+1.  Open the VirtualBox UI.
+
+2.  Click the **Settings** gear, then go to **Shared Folders**.
+
+3.  Select any existing listing under **Machine Folders**, then
+    click the **+** icon.
+
+    * Choose the **Folder Path** on the host, enter the **Folder Name**
+      for within the VM (or take the default, which is the same name
+      as on the host), and configure any additional options you need.
+
+    * Choose **Auto-mount** if you want the folder to automatically
+      be mounted into the VM, and choose **Make Permanent** for it
+      to be considered a permanently shared folder.
+
+4.  Click **OK** to add the new folder to the Shared Folders list.
+
+5.  Click **OK** again to save your changes and exit the Settings dialog.
+
+### Use the command line
+
+You can configure shared folders using a command like the following:
+
+```bash
+$ mount -t vboxsf -o uid=1000,gid=50 your-other-share-name /some/mount/location
+```
+
+This command mounts `/some/mount/location` into the VM at `/your-other-share-hame`,
+owned by UID 1000 and GID 50.
+
+> **Note**: The autommount and permanent mount options are not supported using
+> the command line.
+
 ## How to uninstall Toolbox
 
 Removing Toolbox involves removing all the Docker components it includes.
 
 A full uninstall also includes removing the local and remote machines you created with Docker Machine. In some cases, you might want to keep machines created with Docker Machine.
 
-For example, if you plan to re-install Docker Machine as a part of Docker for Mac you can continue to manage those machines through Docker. Or, if you have remote machines on a cloud provider and you plan to manage them using the provider, you wouldn't want to remove them.  So the step to remove machines is described here as optional.
+For example, if you plan to re-install Docker Machine as a part of Docker for Mac you can continue to manage those machines through Docker. Or, if you have remote machines on a cloud provider and you plan to manage them using the provider, you wouldn't want to remove them. So the step to remove machines is described here as optional.
 
 To uninstall Toolbox on a Mac, do the following:
 
@@ -224,7 +269,13 @@ To uninstall Toolbox on a Mac, do the following:
 
 3.  Remove the Docker Quickstart Terminal and Kitematic from your "Applications" folder.
 
-4.  Remove the `docker`, `docker-compose`, and `docker-machine` commands from the `/usr/local/bin` folder.
+4.  Run the following in a command shell to fully remove Kitematic:
+
+    ```
+    rm -fr ~/Library/Application\ Support/Kitematic
+    ```
+
+5.  Remove the `docker`, `docker-compose`, and `docker-machine` commands from the `/usr/local/bin` folder.
 
     ```
     $ rm /usr/local/bin/docker
@@ -232,7 +283,7 @@ To uninstall Toolbox on a Mac, do the following:
     $ rm /usr/local/bin/docker-machine
     ```
 
-5. Optionally, remove the `~/.docker` directory.
+6. Optionally, remove the `~/.docker` directory.
 
     If you want to remove Docker entirely, you
     can remove the `~/.docker` directory
@@ -242,10 +293,11 @@ To uninstall Toolbox on a Mac, do the following:
     as certificates). Removing this directory
     is typically not necessary.
 
-6. Uninstall Oracle VirtualBox, which is
+
+7. Uninstall Oracle VirtualBox, which is
 installed as a part of the Toolbox install.
 
-## Next Steps
+## Next steps
 
 * Try the [Get started](/get-started/) tutorial.
 

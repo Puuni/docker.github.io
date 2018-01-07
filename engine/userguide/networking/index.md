@@ -1,6 +1,6 @@
 ---
 description: How do we connect docker containers within and across hosts ?
-keywords: Examples, Usage, network, docker, documentation, user guide, multihost, cluster
+keywords: network, networking, iptables, user-defined networks, bridge, firewall, ports
 redirect_from:
 - /engine/userguide/networking/dockernetworks/
 - /articles/networking/
@@ -12,7 +12,10 @@ including the type of networks created by default and how to create your own
 user-defined networks. It also describes the resources required to create
 networks on a single host or across a cluster of hosts.
 
-## Default Networks
+For details about how Docker interacts with `iptables` on Linux hosts, see
+[Docker and `iptables`](#docker-and-iptables).
+
+## Default networks
 
 When you install Docker, it creates three networks automatically. You can list
 these networks using the `docker network ls` command:
@@ -32,12 +35,14 @@ your container should connect to.
 
 The `bridge` network represents the `docker0` network present in all Docker
 installations. Unless you specify otherwise with the `docker run
---network=<NETWORK>` option, the Docker daemon connects containers to this network
-by default. You can see this bridge as part of a host's network stack by using
-the `ifconfig` command on the host.
+--network=<NETWORK>` option, the Docker daemon connects containers to this
+network by default. You can see this bridge as part of a host's network stack by
+using the `ip addr show` command (or short form, `ip a`) on the host. (The
+`ifconfig` command is deprecated. It may also work or give you a `command not
+found` error, depending on your system.)
 
 ```bash
-$ ifconfig
+$ ip addr show
 
 docker0   Link encap:Ethernet  HWaddr 02:42:47:bc:3a:eb
           inet addr:172.17.0.1  Bcast:0.0.0.0  Mask:255.255.0.0
@@ -48,6 +53,24 @@ docker0   Link encap:Ethernet  HWaddr 02:42:47:bc:3a:eb
           collisions:0 txqueuelen:0
           RX bytes:1100 (1.1 KB)  TX bytes:648 (648.0 B)
 ```
+
+> Running on Docker for Mac or Docker for Windows?
+>
+> If you are using Docker for Mac (or running Linux containers on Docker for Windows), the
+`docker network ls` command will work as described above, but the
+`ip addr show` and `ifconfig` commands may be present, but will give you information about
+the IP addresses for your local host, not Docker container networks.
+This is because Docker uses network interfaces running inside a thin VM,
+instead of on the host machine itself.
+>
+> To use the `ip addr show` or `ifconfig` commands to browse Docker
+networks, log on to a [Docker machine](/machine/overview.md) such as a
+local VM or on a cloud provider like a
+[Docker machine on AWS](/machine/examples/aws.md) or a
+[Docker machine on Digital Ocean](/machine/examples/ocean.md).
+You can use `docker-machine ssh <machine-name>` to log on to your
+local or cloud hosted machines, or a direct `ssh` as described
+on the cloud provider site.
 
 The `none` network adds a container to a container-specific network stack. That
 container lacks a network interface. Attaching to such a container and looking
@@ -63,15 +86,11 @@ fe00::0	ip6-localnet
 ff00::0	ip6-mcastprefix
 ff02::1	ip6-allnodes
 ff02::2	ip6-allrouters
-root@0cb243cd1293:/# ifconfig
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+root@0cb243cd1293:/# ip -4 addr
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
 
 root@0cb243cd1293:/#
 ```
@@ -193,9 +212,9 @@ $ docker network inspect bridge
 ```
 
 Containers connected to the default `bridge` network can communicate with each
-other by IP address. Docker does not support automatic service discovery on the
+other by IP address. **Docker does not support automatic service discovery on the
 default bridge network. If you want containers to be able to resolve IP addresses
-by container name, you should use user-defined networks instead. You can link
+by container name, you should use _user-defined networks_ instead**. You can link
 two containers together using the legacy `docker run --link` option, but this
 is not recommended in most cases.
 
@@ -206,32 +225,21 @@ a `#` character.
 ```none
 $ docker attach container1
 
-root@0cb243cd1293:/# ifconfig
+root@3386a527aa08:/# ip -4 addr
 
-eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:02
-          inet addr:172.17.0.2  Bcast:0.0.0.0  Mask:255.255.0.0
-          inet6 addr: fe80::42:acff:fe11:2/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:9001  Metric:1
-          RX packets:16 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:8 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:1296 (1.2 KiB)  TX bytes:648 (648.0 B)
-
-lo        Link encap:Local Loopback
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          inet6 addr: ::1/128 Scope:Host
-          UP LOOPBACK RUNNING  MTU:65536  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+633: eth0@if634: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue
+    inet 172.17.0.2/16 scope global eth0
+       valid_lft forever preferred_lft forever
 ```
 
 From inside the container, use the `ping` command to test the network connection
 to the IP address of the other container.
 
 ```none
-root@0cb243cd1293:/# ping -w3 172.17.0.3
+root@3386a527aa08:/# ping -w3 172.17.0.3
 
 PING 172.17.0.3 (172.17.0.3): 56 data bytes
 64 bytes from 172.17.0.3: seq=0 ttl=64 time=0.096 ms
@@ -247,7 +255,7 @@ Use the `cat` command to view the `/etc/hosts` file on the container. This shows
 the hostnames and IP addresses the container recognizes.
 
 ```
-root@0cb243cd1293:/# cat /etc/hosts
+root@3386a527aa08:/# cat /etc/hosts
 
 172.17.0.2	3386a527aa08
 127.0.0.1	localhost
@@ -266,6 +274,26 @@ The default `docker0` bridge network supports the use of port mapping and
 `docker run --link` to allow communications among containers in the `docker0`
 network. This approach is not recommended. Where possible, you should use
 [user-defined bridge networks](#user-defined-networks) instead.
+
+#### Disable the default bridge network
+
+If you do not want the default bridge network to be created at all, add the
+following to the `daemon.json` file. This only applies when the Docker daemon
+runs on a Linux host.
+
+```json
+"bridge": "none",
+"iptables": "false"
+```
+
+Restart Docker for the changes to take effect.
+
+You can also manually start the `dockerd` with the flags `--bridge=none
+--iptables=false`. However, this may not start the daemon with the same
+environment as the system init scripts, so other behaviors may be changed.
+
+Disabling the default bridge network is an advanced option that most users will
+not need.
 
 ## User-defined networks
 
@@ -330,7 +358,7 @@ c5ee82f76de3        isolated_nw         bridge
 
 ```
 
-After you create the network, you can launch containers on it using  the
+After you create the network, you can launch containers on it using the
 `docker run --network=<NETWORK>` option.
 
 ```none
@@ -466,7 +494,7 @@ daemon. Using network plugins is an advanced topic.
 
 Network plugins follow the same restrictions and installation rules as other
 plugins. All plugins use the plugin API, and have a lifecycle that encompasses
-installation, starting, stopping and activation.
+installation, starting, stopping, and activation.
 
 Once you have created and installed a custom network driver, you can create
 a network which uses that driver with the `--driver` flag.
@@ -502,22 +530,24 @@ network and user-defined bridge networks.
 
 - You expose ports using the `EXPOSE` keyword in the Dockerfile or the
   `--expose` flag to `docker run`. Exposing ports is a way of documenting which
-  ports are used, but does not actually map or open any ports. Exposing ports
+  ports are used, but **does not actually map or open any ports**. Exposing ports
   is optional.
-- You publish ports using the `PUBLISH` keyword in the Dockerfile or the
-  `--publish` flag to `docker run`. This tells Docker which ports to open on the
-  container's network interface. When a port is published, it is mapped to an
+- You publish ports using the `--publish` or `--publish-all` flag to `docker run`.
+  This tells Docker which ports to open on the container's network interface.
+  When a port is published, it is mapped to an
   available high-order port (higher than `30000`) on the host machine, unless
   you specify the port to map to on the host machine at runtime. You cannot
-  specify the port to map to on the host machine in the Dockerfile, because
-  there is no way to guarantee that the port will be available on the host
-  machine where you run the image.
+  specify the port to map to on the host machine when you build the image (in the
+  Dockerfile), because there is no way to guarantee that the port will be available
+  on the host machine where you run the image.
 
   This example publishes port 80 in the container to a random high
-  port (in this case, `32768`) on the host machine.
+  port (in this case, `32768`) on the host machine. The `-d` flag causes the
+  container to run in the background so you can issue the `docker ps`
+  command.
 
   ```bash
-  $ docker run -it -p 80 nginx
+  $ docker run -it -d -p 80 nginx
 
   $ docker ps
 
@@ -529,12 +559,70 @@ network and user-defined bridge networks.
   host machine. It will fail if port 8080 is not available.
 
   ```bash
-  $ docker run -it -p 80:8080 nginx
+  $ docker run -it -d -p 8080:80 nginx
 
   $ docker ps
 
-  b9788c7adca3        nginx               "nginx -g 'daemon ..."   43 hours ago        Up 3 seconds        80/tcp, 443/tcp, 0.0.0.0:80->8080/tcp   goofy_brahmagupta
+  b9788c7adca3        nginx               "nginx -g 'daemon ..."   43 hours ago        Up 3 seconds        80/tcp, 443/tcp, 0.0.0.0:8080->80/tcp   goofy_brahmagupta
   ```
+
+## Use a proxy server with containers
+
+If your container needs to use an HTTP, HTTPS, or FTP proxy server, you can
+configure it in different ways:
+
+- In Docker 17.07 and higher, you can configure the Docker client to pass
+  proxy information to containers automatically.
+
+- In Docker 17.06 and lower, you must set appropriate environment variables
+  within the container. You can do this when you build the image (which makes
+  the image less portable) or when you create or run the container.
+
+### Configure the Docker Client
+
+1.  On the Docker client, create or edit the file `~/.config.json` in the
+    home directory of the user which starts containers. Add JSON such as the
+    following, substituting the type of proxy with `httpsProxy` or `ftpProxy` if
+    necessary, and substituting the address and port of the proxy server. You
+    can configure multiple proxy servers at the same time.
+
+    You can optionally exclude hosts or ranges from going through the proxy
+    server by setting a `noProxy` key to one or more comma-separated IP
+    addresses or hosts. Using the `*` character as a wildcard is supported, as
+    shown in this example.
+
+    ```json
+    {
+      "proxies":
+      {
+        "default":
+        {
+          "httpProxy": "http://127.0.0.1:3001",
+          "noProxy": "*.test.example.com,.example2.com"
+        }
+      }
+    }
+    ```
+
+    Save the file.
+
+2.  When you create or start new containers, the environment variables will be
+    set automatically within the container.
+
+### Set the environment variables manually
+
+When you build the image, or using the `--env` flag when you create or run the
+container, you can set one or more of the following variables to the appropriate
+value. This method makes the image less portable, so if you have Docker 17.07
+or higher, you should [configure the Docker client](#configure-the-docker-client)
+instead.
+
+| Variable      | Dockerfile example                                | `docker run` Example                                |
+|:--------------|:--------------------------------------------------|:----------------------------------------------------|
+| `HTTP_PROXY`  | `ENV HTTP_PROXY "http://127.0.0.1:3001"`          | `--env HTTP_PROXY "http://127.0.0.1:3001"`          |
+| `HTTPS_PROXY` | `ENV HTTPS_PROXY "https://127.0.0.1:3001"`        | `--env HTTPS_PROXY "https://127.0.0.1:3001"`        |
+| `FTP_PROXY`   | `ENV FTP_PROXY "ftp://127.0.0.1:3001"`            | `--env FTP_PROXY "ftp://127.0.0.1:3001"`            |
+| `NO_PROXY`    | `ENV NO_PROXY "*.test.example.com,.example2.com"` | `--env NO_PROXY "*.test.example.com,.example2.com"` |
 
 ## Links
 
@@ -549,6 +637,34 @@ see [Legacy Links](default_network/dockerlinks.md) for link feature
 in default `bridge` network and the
 [linking containers in user-defined networks](work-with-networks.md#linking-containers-in-user-defined-networks)
 for links functionality in user-defined networks.
+
+## Docker and iptables
+
+Linux hosts use a kernel module called `iptables` to manage access to network
+devices, including routing, port forwarding, network address translation (NAT),
+and other concerns. Docker modifies `iptables` rules when you start or stop
+containers which publish ports, when you create or modify networks or attach
+containers to them, or for other network-related operations.
+
+Full discussion of `iptables` is out of scope for this topic. To see which
+`iptables` rules are in effect at any time, you can use `iptables -L`. Multiple
+tables exist, and you can list a specific table, such as `nat`, `prerouting`, or
+`postrouting`, using a command such as `iptables -t nat -L`. For full
+documentation about `iptables`, see
+[netfilter/iptables](https://netfilter.org/documentation/){: target="_blank" class="_" }.
+
+Typically, `iptables` rules are created by an initialization script or a daemon
+process such as `firewalld`. The rules do not persist across a system reboot, so
+the script or utility must run when the system boots, typically at run-level 3
+or directly after the network is initialized. Consult the networking
+documentation for your Linux distribution for suggestions about the appropriate
+way to make `iptables` rules persistent.
+
+Docker dynamically manages `iptables` rules for the daemon, as well as your
+containers, services, and networks. In Docker 17.06 and higher, you can add
+rules to a new table called `DOCKER-USER`, and these rules will be loaded before
+any rules Docker creates automatically. This can be useful if you need to
+pre-populate `iptables` rules that need to be in place before Docker runs.
 
 ## Related information
 

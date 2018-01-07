@@ -23,14 +23,14 @@ instruction in the image's Dockerfile. Each layer except the very last one is
 read-only. Consider the following Dockerfile:
 
 ```conf
-FROM ubuntu:15.10
+FROM ubuntu:15.04
 COPY . /app
 RUN make /app
 CMD python /app/app.py
 ```
 
 This Dockerfile contains four commands, each of which creates a layer.  The
-`FROM` statement starts out by creating a layer from the `ubuntu:15.10` image.
+`FROM` statement starts out by creating a layer from the `ubuntu:15.04` image.
 The `COPY` command adds some files from your Docker client's current directory.
 The `RUN` command builds your application using the `make` command. Finally,
 the last layer specifies what command to run within the container.
@@ -43,68 +43,11 @@ new files, modifying existing files, and deleting files, are written to this thi
 writable container layer. The diagram below shows a container based on the Ubuntu
 15.04 image.
 
-The diagram below shows a container with the Ubuntu 15.04 image comprising 4
-stacked image layers, and the writable container layer on top.
-
-![Docker image layers](images/container-layers.jpg)
+![Layers of a container based on the Ubuntu image](images/container-layers.jpg)
 
 A _storage driver_ handles the details about the way these layers interact with
 each other. Different storage drivers are available, which have advantages
 and disadvantages in different situations.
-
-### Content addressable storage
-
-If you are already running Docker 1.10 or higher, you can skip this section and
-go straight to [Containers and layers](#containers-and-layers).
-
-Docker 1.10 introduced a new content addressable storage model. This is a
-completely new way to address image and layer data on disk. Previously, image
-and layer data was referenced and stored using a randomly generated UUID. In
-the new model this is replaced by a secure *content hash*.
-
-The new model improves security, provides a built-in way to avoid ID
-collisions, and guarantees data integrity after pull, push, load, and save
-operations. It also enables better sharing of layers by allowing many images to
-freely share their layers even if they didn’t come from the same build.
-
-The diagram below shows an updated version of the previous diagram,
-highlighting the changes implemented by Docker 1.10.
-
-![](images/container-layers-cas.jpg)
-
-All image layer IDs are cryptographic hashes, whereas the container ID is still
-a randomly generated UUID.
-
-The new model requires you to migrate existing images from Docker 1.9 and
-earlier, and it includes several changes to the filesystem structure of images
-and layers. If you are already running Docker 1.10 or higher, you can skip this
-section.
-
-Images created within Docker 1.9 or earlier need to be migrated before they can
-be used with the new model. This migration involves calculating new secure
-checksums and is performed automatically the first time you start an updated
-Docker daemon. After the migration is complete, all images and tags will have
-brand new secure IDs.
-
-Although the migration is automatic and transparent, it is computationally
-intensive. It may take some time to complete, and during this time, Docker will
-not respond to other requests. If this is a problem, you can use a
-[migration tool](https://github.com/docker/v1.10-migrator/releases) to migrate
-existing images to the new format before upgrading Docker. This avoids
-downtime and allows you to distribute migraated images to systems that have
-already been upgraded. For more information, see
-[https://github.com/docker/v1.10-migrator/releases](https://github.com/docker/v1.10-migrator/releases).
-
-During the migration, you need to expose your Docker host's data directory to
-the migration container. If you are using the default Docker data path, use a
-command like the following:
-
-```bash
-$ sudo docker run --rm -v /var/lib/docker:/var/lib/docker docker/v1.10-migrator
-```
-
-If you use the `devicemapper` storage driver, you need to include the
-`--privileged` option so that the container has access to your storage devices.
 
 ## Container and layers
 
@@ -118,16 +61,51 @@ stored in this container layer, multiple containers can share access to the same
 underlying image and yet have their own data state. The diagram below shows
 multiple containers sharing the same Ubuntu 15.04 image.
 
-![](images/sharing-layers.jpg)
+![Containers sharing same image](images/sharing-layers.jpg)
 
 > **Note**: If you need multiple images to have shared access to the exact
-> asme data, store this data in a Docker volume and mount it into your
+> same data, store this data in a Docker volume and mount it into your
 > containers.
 
 Docker uses storage drivers to manage the contents of the image layers and the
 writable container layer. Each storage driver handles the implementation
 differently, but all drivers use stackable image layers and the copy-on-write
 (CoW) strategy.
+
+## Container size on disk
+
+To view the approximate size of a running container, you can use the `docker ps -s`
+command. Two different columns relate to size.
+
+- `size`: the amount of data (on disk) that is used for the writable layer of
+  each container
+
+- `virtual size`: the amount of data used for the read-only image data
+  used by the container plus the container's writable layer `size`. 
+  Multiple containers may share some or all read-only
+  image data. Two containers started from the same image share 100% of the
+  read-only data, while two containers with different images which have layers
+  in common share those common layers. Therefore, you can't just total the
+  virtual sizes. This will over-estimate the total disk usage by a potentially
+  non-trivial amount.
+
+The total disk space used by all of the running containers on disk is some
+combination of each container's `size` and the `virtual size` values. If
+multiple containers started from the same exact image, the total size on disk for 
+these containers would be SUM (`size` of containers) plus one container's 
+(`virtual size`- `size`).
+
+This also does not count the following additional ways a container can take up
+disk space:
+
+- Disk space used for log files if you use the `json-file` logging driver. This
+  can be non-trivial if your container generates a large amount of logging data
+  and log rotation is not configured.
+- Volumes and bind mounts used by the container.
+- Disk space used for the container's configuration files, which are typically
+  small.
+- Memory written to disk (if swapping is enabled).
+- Checkpoints, if you're using the experimental checkpoint/restore feature.
 
 ## The copy-on-write (CoW) strategy
 
@@ -175,7 +153,7 @@ ebf814eccfe98f2704660ca1d844e4348db3b5ccc637eb905d4818fbfb00a06a
 The directory names do not correspond to the layer IDs (this has been true since
 Docker 1.10).
 
-Now imagine that you have to different Dockerfiles. You use the first one to
+Now imagine that you have two different Dockerfiles. You use the first one to
 create an image called `acme/my-base-image:1.0`.
 
 ```conf
@@ -192,7 +170,7 @@ CMD /app/hello.sh
 ```
 
 The second image contains all the layers from the first image, plus a new layer
-with the `RUN` instruction, and a read-write container layer. Docker already
+with the `CMD` instruction, and a read-write container layer. Docker already
 has all the layers from the first image, so it does not need to pull them again.
 The two images will share any layers they have in common.
 
@@ -221,7 +199,9 @@ layers are the same.
 4.  Copy the contents of the second Dockerfile above into a new file called
     `Dockerfile`.
 
-5.  Within the `cow-test/` directory, build the first image.
+5.  Within the `cow-test/` directory, build the first image. Don't forget to
+    include the final `.` in the command. That sets the `PATH`, which tells
+    Docker where to look for any files that need to be added to the image.
 
     ```bash
     $ docker build -t acme/my-base-image:1.0 -f Dockerfile.base .
@@ -257,9 +237,9 @@ layers are the same.
     ```bash
     $ docker images
 
-    REPOSITORY                                            TAG                          IMAGE ID            CREATED             SIZE
-    acme/my-final-image                                   1.0                          dbf995fc07ff        58 seconds ago      103MB
-    acme/my-base-image                                    1.0                          bd09118bcef6        3 minutes ago       103MB
+    REPOSITORY                         TAG                     IMAGE ID            CREATED             SIZE
+    acme/my-final-image                1.0                     dbf995fc07ff        58 seconds ago      103MB
+    acme/my-base-image                 1.0                     bd09118bcef6        3 minutes ago       103MB
     ```
 
 8.  Check out the layers that comprise each image:
@@ -304,11 +284,11 @@ layers are the same.
 When you start a container, a thin writable container layer is added on top of
 the other layers. Any changes the container makes to the filesystem are stored
 here. Any files the container does not change do not get copied to this writable
-layer. This means that the writable layer is as mall as possible.
+layer. This means that the writable layer is as small as possible.
 
 When an existing file in a container is modified, the storage driver performs a
 copy-on-write operation. The specifics steps involved depend on the specific
-storage driver. For The default `aufs` driver and the `overlay` and `overlay2`
+storage driver. For the default `aufs` driver and the `overlay` and `overlay2`
 drivers, the copy-on-write operation follows this rough sequence:
 
 *  Search through the image layers for the file to update. The process starts
@@ -368,12 +348,12 @@ examines how much room they take up.
 2.  Run the `docker ps` command to verify the 5 containers are running.
 
     ```bash
-    CONTAINER ID        IMAGE                     COMMAND                  CREATED              STATUS              PORTS               NAMES
-    1a174fc216cc        acme/my-final-image:1.0   "bash"                   About a minute ago   Up About a minute                       my_container_5
-    38fa94212a41        acme/my-final-image:1.0   "bash"                   About a minute ago   Up About a minute                       my_container_4
-    1e7264576d78        acme/my-final-image:1.0   "bash"                   About a minute ago   Up About a minute                       my_container_3
-    dcad7101795e        acme/my-final-image:1.0   "bash"                   About a minute ago   Up About a minute                       my_container_2
-    c36785c423ec        acme/my-final-image:1.0   "bash"                   About a minute ago   Up About a minute                       my_container_1
+    CONTAINER ID      IMAGE                     COMMAND     CREATED              STATUS              PORTS      NAMES
+    1a174fc216cc      acme/my-final-image:1.0   "bash"      About a minute ago   Up About a minute              my_container_5
+    38fa94212a41      acme/my-final-image:1.0   "bash"      About a minute ago   Up About a minute              my_container_4
+    1e7264576d78      acme/my-final-image:1.0   "bash"      About a minute ago   Up About a minute              my_container_3
+    dcad7101795e      acme/my-final-image:1.0   "bash"      About a minute ago   Up About a minute              my_container_2
+    c36785c423ec      acme/my-final-image:1.0   "bash"      About a minute ago   Up About a minute              my_container_1
     ```
 
 
@@ -429,7 +409,7 @@ storage area (`/var/lib/docker/...`). There is also a single shared data volume
 located at `/data` on the Docker host. This is mounted directly into both
 containers.
 
-![](images/shared-volume.jpg)
+![Shared volume across containers](images/shared-volume.jpg)
 
 Data volumes reside outside of the local storage area on the Docker host,
 further reinforcing their independence from the storage driver's control. When

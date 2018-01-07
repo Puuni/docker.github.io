@@ -111,7 +111,7 @@ You have three options:
 1.  On your local machine, clone this repo and run our staging container:
 
     ```bash
-    git clone https://github.com/docker/docker.github.io.git
+    git clone --recursive https://github.com/docker/docker.github.io.git
     cd docker.github.io
     docker-compose up
     ```
@@ -134,11 +134,10 @@ You have three options:
     a. Clone this repo by running:
 
        ```bash
-       git clone https://github.com/docker/docker.github.io.git
+       git clone --recursive https://github.com/docker/docker.github.io.git
        ```
 
-    b. Install Ruby 2.3 or later as described in [Installing Ruby]
-    (https://www.ruby-lang.org/en/documentation/installation/).
+    b. Install Ruby 2.3 or later as described in [Installing Ruby](https://www.ruby-lang.org/en/documentation/installation/).
 
     c. Install Bundler:
 
@@ -170,10 +169,28 @@ You have three options:
     You can continue working in a second terminal and Jekyll will rebuild the
     website incrementally. Refresh the browser to preview your changes.
 
-3.  Use Github Pages, with or without a local clone. Fork this repo in GitHub,
-    change your fork's repository name to `YOUR_GITHUB_USERNAME.github.io`, and
-    make changes to the Markdown files in your `master` branch. Browse to
-    https://\<YOUR_GITHUB_USERNAME\>.github.io/ to preview the changes.
+## Read these docs offline
+
+To read the docs offline, you can use either a standalone container or a swarm service.
+To see all available tags, go to
+[Docker Cloud](https://cloud.docker.com/app/docs/repository/docker/docs/docker.github.io/tags).
+The following examples use the `latest` tag:
+
+- Run a single container:
+
+  ```bash
+  docker run  -it -p 4000:4000 docs/docker.github.io:latest
+  ```
+
+- Run a swarm service:
+
+  ```bash
+  docker service create -p 4000:4000 --name localdocs --replicas 1 docs/docker.github.io:latest
+  ```
+
+  This example uses only a single replica, but you could run as many replicas as you'd like.
+
+Either way, you can now access the docs at port 4000 on your Docker host.
 
 ## Important files
 
@@ -187,14 +204,6 @@ You have three options:
 Feel free to link to `../foo.md` so that the docs are readable in GitHub, but keep in mind that Jekyll templating notation
 `{% such as this %}` will render in raw text and not be processed. In general it's best to assume the docs are being read
 directly on [https://docs.docker.com/](https://docs.docker.com/).
-
-## Style guide
-
-If you have questions about how to write for Docker's documentation, please see
-the [style guide](https://docs.docker.com/opensource/doc-style/). The style guide provides
-guidance about grammar, syntax, formatting, styling, language, or tone. If
-something isn't clear in the guide, please submit an issue to let us know or
-submit a pull request to help us improve it.
 
 ### Testing changes and practical guidance
 
@@ -268,6 +277,83 @@ after all the content. Otherwise the script may try to run before JQuery and
 Bootstrap JS are loaded.
 
 > **Note**: In general, this is a bad idea.
+
+## Building archives and the live published docs
+
+All the images described below are automatically built using Docker Cloud. To
+build the site manually, from scratch, including all utility and archive
+images, see the [README in the publish-tools branch](https://github.com/docker/docker.github.io/blob/publish-tools/README.md).
+
+- Some utility images are built from Dockerfiles in the `publish-tools` branch.
+  See its [README](https://github.com/docker/docker.github.io/blob/publish-tools/README.md)
+  for details.
+- Each archive branch automatically builds an image tagged
+  `docs/docker.github.io:v<VERSION>` when a change is merged into that branch.
+- The `master` branch has a Dockerfile which uses the static HTML from each
+  archive image, in combination with the Markdown
+  files in `master` and some upstream resources which are fetched at build-time,
+  to create the full site at https://docs.docker.com/. All
+  of the long-running branches, such as `vnext-engine`, `vnext-compose`, etc,
+  use the same logic.
+
+## Creating a new archive
+
+When a new Docker CE Stable version is released, the previous state of `master`
+is archived into a version-specific branch like `v17.09`, by doing the following:
+
+1.  Create branch based off the commit hash before the new version was released.
+
+    ```bash
+    $ git checkout <HASH>
+    $ git checkout -b v17.09
+    ```
+
+2.  Run the `_scripts/fetch-upstream-resources.sh` script. This puts static
+    copies of the files in place that the `master`  build typically fetches
+    each build.
+
+    ```bash
+    $ _scripts/fetch-upstream/resources.sh
+    ```
+
+3.  Overwrite the `Dockerfile` with the `Dockerfile.archive` (use `cp` rather
+    than `mv` so you don't inadvertently remove either file). Edit the resulting
+    `Dockerfile` and set the `VER` build argument to the appropriate value, like
+    `v17.09`.
+
+    ```bash
+    $ mv Dockerfile.archive Dockerfile
+    $ vi Dockerfile
+
+      < edit the variable and save >
+    ```
+
+4.  Do `git status` and add all changes, being careful not to add anything extra
+    by accident. Commit your work.
+
+    ```bash
+    $ git status
+    $ git add <filename>
+    $ git add <filename> (etc etc etc)
+    $ git commit -m "Creating archive for 17.09 docs"
+    ```
+
+5.  Make sure the archive builds.
+
+    ```bash
+    $ docker build -t docker build -t docs/docker.github.io:v17.09 .
+    $ docker run --rm -it -p 4000:4000 docs/docker.github.io:v17.09
+    ```
+
+    After the `docker run` command, browse to `http://localhost:4000/` and
+    verify that the archive is self-browseable.
+
+6.  Push the branch to the upstream repository. Do not create a pull request
+    as there is no reference branch to compare against.
+
+    ```bash
+    $ git push upstream v17.09
+    ```
 
 ## Copyright and license
 

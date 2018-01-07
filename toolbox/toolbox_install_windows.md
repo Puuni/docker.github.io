@@ -5,7 +5,7 @@ keywords: docker, documentation, install, toolbox, win
 title: Install Docker Toolbox on Windows
 ---
 
-Docker Toolbox provides a way to use Docker on older
+Docker Toolbox provides a way to use Docker on
 Windows systems that do not
 meet minimal system requirements for the [Docker for
 Windows](/docker-for-windows/index.md) app.
@@ -28,7 +28,7 @@ Docker Toolbox includes the following Docker tools:
 Because the Docker Engine daemon uses Linux-specific
 kernel features, you can't run Docker Engine natively
 on Windows. Instead, you must use the Docker Machine
-command,  `docker-machine`, to create and attach to a
+command, `docker-machine`, to create and attach to a
 small Linux VM on your machine. This VM hosts Docker Engine
 for you on your Windows system.
 
@@ -49,7 +49,7 @@ To verify your machine meets these requirements, do the following:
   operating system.
 
     If you have a newer system, specifically 64bit Windows 10 Pro, with
-    Enterprise and Education (1511 November update, Build 10586 or later),
+    Enterprise and Education (1607 Anniversary update, Build 14393 or later),
     consider using [Docker for Windows](/docker-for-windows) instead. It runs
     natively on the Windows, so there is no need for a pre-configured Docker
     QuickStart shell. It also uses Hyper-V for virtualization, so the
@@ -73,13 +73,14 @@ To verify your machine meets these requirements, do the following:
     <br>
     **For Windows 7**
 
-    Run the [Microsoft® Hardware-Assisted Virtualization Detection Tool](http://www.microsoft.com/en-us/download/details.aspx?id=592) and follow the on-screen instructions.
+    Run a tool like the [Microsoft® Hardware-Assisted Virtualization Detection Tool](http://www.microsoft.com/en-us/download/details.aspx?id=592){: target="_blank" class="_"} or [Speccy](https://www.piriform.com/speccy){: target="_blank" class="_"}, and follow the on-screen instructions.
     <br><br>
 3. Verify your Windows OS is 64-bit (x64)
 
-   How you do this verification depends on your Windows version.  For details, see the Windows
-    article [How to determine whether a computer is running a 32-bit version or 64-bit version
-    of the Windows operating system](https://support.microsoft.com/en-us/kb/827218).
+   How you do this verification depends on your Windows version.  
+   For details, see the Windows article [How to determine whether
+   a computer is running a 32-bit version or 64-bit version of the
+   Windows operating system](https://support.microsoft.com/en-us/kb/827218).
 
 ## Step 2: Install Docker Toolbox
 
@@ -95,7 +96,7 @@ If you have a previous version of VirtualBox installed, do not reinstall it with
 If you have Virtual Box running, you must shut it down before running the
 installer.
 
-1. Go to the <a href="https://www.docker.com/toolbox" target="_blank">Docker Toolbox</a> page.
+1. Go to the [Docker Toolbox](https://www.docker.com/toolbox){: target="_blank" class="_" } page.
 
 2. Click the installer link to download.
 
@@ -124,14 +125,15 @@ installer.
 
 ## Step 3: Verify your installation
 
-The installer places Docker Toolbox and VirtualBox in your **Applications** folder.
-In this step, you start Docker Toolbox and run a simple Docker command.
+The installer adds Docker Toolbox, VirtualBox, and Kitematic to your
+**Applications** folder. In this step, you start Docker Toolbox and run a simple
+Docker command.
 
-1. On your Desktop, find the Docker Toolbox icon.
+1. On your Desktop, find the Docker QuickStart Terminal icon.
 
     ![Desktop](images/icon-set.png)
 
-2. Click the icon to launch a Docker Toolbox terminal.
+2. Click the Docker QuickStart icon to launch a pre-configured Docker Toolbox terminal.
 
     If the system displays a **User Account Control** prompt to allow VirtualBox to make changes to your computer. Choose **Yes**.
 
@@ -141,7 +143,7 @@ In this step, you start Docker Toolbox and run a simple Docker command.
 
     The terminal runs a special `bash` environment instead of the standard Windows command prompt. The `bash` environment is required by Docker.
 
-3.  Make the terminal active by click your mouse next to the `$` prompt.
+3.  Make the terminal active by clicking your mouse next to the `$` prompt.
 
     If you aren't familiar with a terminal window, here are some quick tips.
 
@@ -188,6 +190,34 @@ Typically, the above steps work out-of-the-box, but some scenarios can cause pro
 A Windows specific problem you might encounter has to do with the NDIS6 host network filter driver, which is known to cause issues on some Windows
 versions. For Windows Vista systems and newer, VirtualBox installs NDIS6 driver by default. Issues can range from system slowdowns to networking problems for the virtual machine (VM). If you notice problems, **re-run the Docker Toolbox installer**, and select the option to _**install VirtualBox with the NDIS5 driver**_.
 
+## Optional: Add shared directories
+
+By default, Toolbox only has access to the `C:\Users` directory and mounts it into
+the VMs at `/c/Users`.
+
+> **Note**: Within the VM path, `c` is lowercase and the `Users` is capitalized.
+
+If your project lives elsewhere or needs access to other
+directories on the host filesystem, you can add them, using the VirtualBox UI.
+
+1.  Open the VirtualBox UI.
+
+2.  Click the **Settings** gear, then go to **Shared Folders**.
+
+3.  Select any existing listing under **Machine Folders**, then
+    click the **+** icon.
+
+    * Choose the **Folder Path** on the host, enter the **Folder Name**
+      for within the VM (or take the default, which is the same name
+      as on the host), and configure any additional options you need.
+
+    * Choose **Auto-mount** if you want the folder to automatically
+      be mounted into the VM, and choose **Make Permanent** for it
+      to be considered a permanently shared folder.
+
+4.  Click **OK** to add the new folder to the Shared Folders list.
+
+5.  Click **OK** again to save your changes and exit the Settings dialog.
 
 ## How to uninstall Toolbox
 
@@ -195,7 +225,7 @@ Removing Toolbox involves removing all the Docker components it includes.
 
 A full uninstall also includes removing the local and remote machines you created with Docker Machine. In some cases, you might want to keep machines created with Docker Machine.
 
-For example, if you plan to re-install Docker Machine as a part of Docker for Windows you can continue to manage those machines through Docker. Or, if you have remote machines on a cloud provider and you plan to manage them using the provider, you wouldn't want to remove them.  So the step to remove machines is described here as optional.
+For example, if you plan to re-install Docker Machine as a part of Docker for Windows you can continue to manage those machines through Docker. Or, if you have remote machines on a cloud provider and you plan to manage them using the provider, you wouldn't want to remove them. So the step to remove machines is described here as optional.
 
 To uninstall Toolbox on Windows, do the following:
 
@@ -223,7 +253,7 @@ To uninstall Toolbox on Windows, do the following:
     continue to manage those machines
     through Docker.
 
-3. Uninstall Docker Toolbox using Window's standard process for uninstalling programs through the control panel.
+3. Uninstall Docker Toolbox using Window's standard process for uninstalling programs through the control panel (programs and features).
 
     >**Note**: This process does not remove the `docker-install.exe` file. You must delete that file yourself.
 
@@ -243,7 +273,7 @@ To uninstall Toolbox on Windows, do the following:
 6. Uninstall Oracle VirtualBox, which is
   installed as a part of the Toolbox install.
 
-## Next Steps
+## Next steps
 
 * Try out the [Get started](/get-started/) tutorial.
 

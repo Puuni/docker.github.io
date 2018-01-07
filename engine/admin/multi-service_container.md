@@ -18,7 +18,7 @@ shared volumes.
 
 The container's main process is responsible for managing all processes that it
 starts. In some cases, the main process isn't well-designed, and doesn't handle
-"reaping" (stopping) child processes gracefully when the container exists. If
+"reaping" (stopping) child processes gracefully when the container exits. If
 your process falls into this category, you can use the `--init` option when you
 run the container. The `--init` flag inserts a tiny init-process into the
 container as the main process, and handles reaping of all processes when the
@@ -57,10 +57,12 @@ this in a few different ways.
   # more than one service in a container. The container will exit with an error
   # if it detects that either of the processes has exited.
   # Otherwise it will loop forever, waking up every 60 seconds
-  
+
   while /bin/true; do
-    PROCESS_1_STATUS=$(ps aux |grep -q my_first_process |grep -v grep)
-    PROCESS_2_STATUS=$(ps aux |grep -q my_second_process | grep -v grep)
+    ps aux |grep my_first_process |grep -q -v grep
+    PROCESS_1_STATUS=$?
+    ps aux |grep my_second_process |grep -q -v grep
+    PROCESS_2_STATUS=$?
     # If the greps above find anything, they will exit with 0 status
     # If they are not both 0, then something is wrong
     if [ $PROCESS_1_STATUS -ne 0 -o $PROCESS_2_STATUS -ne 0 ]; then

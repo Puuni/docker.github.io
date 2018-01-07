@@ -65,7 +65,7 @@ redis --redeploy
 
 This command defines two new environment variables in the **redis** service and
 then redeploys the service so they take effect. You can learn more about our
-open source `redis` image <a href="https://github.com/docker-library/redis/" target ="_blank">here</a>.
+open source `redis` image [here](https://github.com/docker-library/redis/){: target="_blank" class="_"}.
 
 With these settings, Redis can create and store its data in a volume. The volume is in `/data`.
 
@@ -119,7 +119,7 @@ up, restore, or migrate a volume to a local host or a cloud storage provider.
 
 In this next step, you'll download the `/data` volume from Redis to your local host using SCP (secure copy).
 
-First, run a SSH service that mounts the volumes of the redis you want to back up:
+First, run an SSH service that mounts the volumes of the redis you want to back up:
 
 ```bash
 $ docker-cloud service run -n download -p 2222:22 -e AUTHORIZED_KEYS="$(cat ~/.ssh/id_rsa.pub)" --volumes-from redis tutum/ubuntu

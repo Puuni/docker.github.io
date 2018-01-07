@@ -9,14 +9,122 @@ toc_max: 4
 toc_min: 1
 ---
 
+## Reference and guidelines
+
 These topics describe version 3 of the Compose file format. This is the newest
 version.
 
-For a Compose/Docker Engine compatibility matrix, and detailed guidelines on
-versions and upgrading, see
-[Compose file versions and upgrading](compose-versioning.md).
+## Compose and Docker compatibility matrix
+
+There are several versions of the Compose file format – 1, 2, 2.x, and 3.x. The
+table below is a quick look. For full details on what each version includes and
+how to upgrade, see **[About versions and upgrading](compose-versioning.md)**.
+
+{% include content/compose-matrix.md %}
 
 ## Compose file structure and examples
+
+<div class="panel panel-default">
+    <div class="panel-heading collapsed" data-toggle="collapse" data-target="#collapseSample1" style="cursor: pointer">
+    Example Compose file version 3
+    <i class="chevron fa fa-fw"></i></div>
+    <div class="collapse block" id="collapseSample1">
+<pre><code>
+version: "3"
+services:
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379"
+    networks:
+      - frontend
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  db:
+    image: postgres:9.4
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  vote:
+    image: dockersamples/examplevotingapp_vote:before
+    ports:
+      - 5000:80
+    networks:
+      - frontend
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+      restart_policy:
+        condition: on-failure
+
+  result:
+    image: dockersamples/examplevotingapp_result:before
+    ports:
+      - 5001:80
+    networks:
+      - backend
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  worker:
+    image: dockersamples/examplevotingapp_worker
+    networks:
+      - frontend
+      - backend
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels: [APP=VOTING]
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints: [node.role == manager]
+
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  db-data:
+</code></pre>
+    </div>
+</div>
 
 The topics on this reference page are organized alphabetically by top-level key
 to reflect the structure of the Compose file itself. Top-level keys that define
@@ -25,10 +133,6 @@ a section in the configuration file such as `build`, `deploy`, `depends_on`,
 sub-topics. This maps to the `<key>: <option>: <value>` indent structure of the
 Compose file.
 
-The best way to grok the layout and syntax of a Compose file is to
-read [Get started with Docker Compose](/compose/gettingstarted/) and look
-at files included in [sample applications](https://docs.docker.com/samples/).
-
 A good place to start is the [Getting Started](/get-started/index.md) tutorial
 which uses version 3 Compose stack files to implement multi-container apps,
 service definitions, and swarm mode. Here are some Compose files used in the
@@ -36,10 +140,12 @@ tutorial.
 
 - [Your first docker-compose.yml File](/get-started/part3.md#your-first-docker-composeyml-file)
 
-- [Adding a new service and redeploying](/get-started/part5.md#adding-a-new-service-and-redeploying)
+- [Add a new service and redeploy](/get-started/part5.md#add-a-new-service-and-redeploy)
 
-Another example of a Compose file is included in the Docker Labs topic, [Deploying an app to a Swarm](https://github.com/docker/labs/blob/master/beginner/chapters/votingapp.md).
-
+Another good reference is the Compose file for the voting app sample used in the
+[Docker for Beginners lab](https://github.com/docker/labs/tree/master/beginner/)
+topic on [Deploying an app to a
+Swarm](https://github.com/docker/labs/blob/master/beginner/chapters/votingapp.md). This is also shown on the accordion at the top of this section.
 
 ## Service configuration reference
 
@@ -54,10 +160,10 @@ They both work.
 
 A service definition contains configuration which will be applied to each
 container started for that service, much like passing command-line parameters to
-`docker run`. Likewise, network and volume definitions are analogous to
+`docker container create`. Likewise, network and volume definitions are analogous to
 `docker network create` and `docker volume create`.
 
-As with `docker run`, options specified in the Dockerfile (e.g., `CMD`,
+As with `docker container create`, options specified in the Dockerfile (e.g., `CMD`,
 `EXPOSE`, `VOLUME`, `ENV`) are respected by default - you don't need to
 specify them again in `docker-compose.yml`.
 
@@ -73,16 +179,28 @@ definition in version 3.
 Configuration options that are applied at build time.
 
 `build` can be specified either as a string containing a path to the build
-context, or an object with the path specified under [context](#context) and
-optionally [dockerfile](#dockerfile) and [args](#args).
+context:
 
+```none
+version: '3'
+services:
+  webapp:
     build: ./dir
+```
 
+Or, as an object with the path specified under [context](#context) and
+optionally [Dockerfile](#dockerfile) and [args](#args):
+
+```none
+version: '3'
+services:
+  webapp:
     build:
       context: ./dir
       dockerfile: Dockerfile-alternate
       args:
         buildno: 1
+```
 
 If you specify `image` as well as `build`, then Compose names the built image
 with the `webapp` and optional `tag` specified in `image`:
@@ -171,6 +289,48 @@ A list of images that the engine will use for cache resolution.
         - alpine:latest
         - corp/web_app:3.14
 
+#### labels
+
+> **Note:** This option is new in v3.3
+
+Add metadata to the resulting image using [Docker labels](/engine/userguide/labels-custom-metadata.md).
+You can use either an array or a dictionary.
+
+It's recommended that you use reverse-DNS notation to prevent your labels from conflicting with
+those used by other software.
+
+    build:
+      context: .
+      labels:
+        com.example.description: "Accounting webapp"
+        com.example.department: "Finance"
+        com.example.label-with-empty-value: ""
+
+
+    build:
+      context: .
+      labels:
+        - "com.example.description=Accounting webapp"
+        - "com.example.department=Finance"
+        - "com.example.label-with-empty-value"
+
+#### shm_size
+
+> Added in [version 3.5](compose-versioning.md#version-35) file format
+
+Set the size of the `/dev/shm` partition for this build's containers. Specify
+as an integer value representing the number of bytes or as a string expressing
+a [byte value](#specifying-byte-values).
+
+    build:
+      context: .
+      shm_size: '2gb'
+
+
+    build:
+      context: .
+      shm_size: 10000000
+
 ### cap_add, cap_drop
 
 Add or drop container capabilities.
@@ -196,7 +356,101 @@ Override the default command.
 The command can also be a list, in a manner similar to
 [dockerfile](/engine/reference/builder.md#cmd):
 
-    command: [bundle, exec, thin, -p, 3000]
+    command: ["bundle", "exec", "thin", "-p", "3000"]
+
+### configs
+
+Grant access to configs on a per-service basis using the per-service `configs`
+configuration. Two different syntax variants are supported.
+
+> **Note**: The config must already exist or be
+> [defined in the top-level `configs` configuration](#configs-configuration-reference)
+> of this stack file, or stack deployment will fail.
+
+For more information on configs, see [configs](/engine/swarm/configs.md).
+
+#### Short syntax
+
+The short syntax variant only specifies the config name. This grants the
+container access to the config and mounts it at `/<config_name>`
+within the container. The source name and destination mountpoint are both set
+to the config name.
+
+The following example uses the short syntax to grant the `redis` service
+access to the `my_config` and `my_other_config` configs. The value of
+`my_config` is set to the contents of the file `./my_config.txt`, and
+`my_other_config` is defined as an external resource, which means that it has
+already been defined in Docker, either by running the `docker config create`
+command or by another stack deployment. If the external config does not exist,
+the stack deployment fails with a `config not found` error.
+
+> **Note**: `config` definitions are only supported in version 3.3 and higher
+>  of the compose file format.
+
+```none
+version: "3.3"
+services:
+  redis:
+    image: redis:latest
+    deploy:
+      replicas: 1
+    configs:
+      - my_config
+      - my_other_config
+configs:
+  my_config:
+    file: ./my_config.txt
+  my_other_config:
+    external: true
+```
+
+#### Long syntax
+
+The long syntax provides more granularity in how the config is created within
+the service's task containers.
+
+- `source`: The name of the config as it exists in Docker.
+- `target`: The path and name of the file that will be mounted in the service's
+  task containers. Defaults to `/<source>` if not specified.
+- `uid` and `gid`: The numeric UID or GID which will own the mounted config file
+  within in the service's task containers. Both default to `0` on Linux if not
+  specified. Not supported on Windows.
+- `mode`: The permissions for the file that will be mounted within the service's
+  task containers, in octal notation. For instance, `0444`
+  represents world-readable. The default is `0444`. Configs cannot be writable
+  because they are mounted in a temporary filesystem, so if you set the writable
+  bit, it is ignored. The executable bit can be set. If you aren't familiar with
+  UNIX file permission modes, you may find this
+  [permissions calculator](http://permissions-calculator.org/){: target="_blank" class="_" }
+  useful.
+
+The following example sets the name of `my_config` to `redis_config` within the
+container, sets the mode to `0440` (group-readable) and sets the user and group
+to `103`. The `redis` service does not have access to the `my_other_config`
+config.
+
+```none
+version: "3.3"
+services:
+  redis:
+    image: redis:latest
+    deploy:
+      replicas: 1
+    configs:
+      - source: my_config
+        target: /redis_config
+        uid: '103'
+        gid: '103'
+        mode: 0440
+configs:
+  my_config:
+    file: ./my_config.txt
+  my_other_config:
+    external: true
+```
+
+You can grant a service access to multiple configs and you can mix long and
+short syntax. Defining a config does not imply granting a service access to it.
 
 ### cgroup_parent
 
@@ -222,6 +476,33 @@ an error.
 > [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
 > with a (version 3) Compose file.
 
+### credential_spec
+
+> **Note:** this option was added in v3.3
+
+Configure the credential spec for managed service account. This option is only
+used for services using Windows containers. The `credential_spec` must be in the
+format `file://<filename>` or `registry://<value-name>`.
+
+When using `file:`, the referenced file must be present in the `CredentialSpecs`
+subdirectory in the docker data directory, which defaults to `C:\ProgramData\Docker\`
+on Windows. The following example loads the credential spec from a file named
+`C:\ProgramData\Docker\CredentialSpecs\my-credential-spec.json`:
+
+    credential_spec:
+      file: my-credential-spec.json
+
+When using `registry:`, the credential spec is read from the Windows registry on
+the daemon's host. A registry value with the given name must be located in:
+
+    HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization\Containers\CredentialSpecs
+
+The following example load the credential spec from a value named `my-credential-spec`
+in the registry:
+
+    credential_spec:
+      registry: my-credential-spec
+
 ### deploy
 
 > **[Version 3](compose-versioning.md#version-3) only.**
@@ -246,6 +527,93 @@ ignored by `docker-compose up` and `docker-compose run`.
 
 Several sub-options are available:
 
+#### endpoint_mode
+
+Specify a service discovery method for external clients connecting to a swarm.
+
+> **[Version 3.3](compose-versioning.md#version-3) only.**
+
+* `endpoint_mode: vip` - Docker assigns the service a virtual IP (VIP),
+which acts as the “front end” for clients to reach the service on a
+network. Docker routes requests between the client and available worker
+nodes for the service, without client knowledge of how many nodes
+are participating in the service or their IP addresses or ports.
+(This is the default.)
+
+* `endpoint_mode: dnsrr` -  DNS round-robin (DNSRR) service discovery does
+not use a single virtual IP. Docker sets up DNS entries for the service
+such that a DNS query for the service name returns a list of IP addresses,
+and the client connects directly to one of these. DNS round-robin is useful
+in cases where you want to use your own load balancer, or for Hybrid
+Windows and Linux applications.
+
+```none
+version: "3.3"
+
+services:
+  wordpress:
+    image: wordpress
+    ports:
+      - 8080:80
+    networks:
+      - overlay
+    deploy:
+      mode: replicated
+      replicas: 2
+      endpoint_mode: vip
+
+  mysql:
+    image: mysql
+    volumes:
+       - db-data:/var/lib/mysql/data
+    networks:
+       - overlay
+    deploy:
+      mode: replicated
+      replicas: 2
+      endpoint_mode: dnsrr
+
+volumes:
+  db-data:
+
+networks:
+  overlay:
+```
+
+The options for `endpoint_mode` also work as flags on the swarm mode CLI command
+[docker service create](/engine/reference/commandline/service_create.md). For a
+quick list of all swarm related `docker` commands, see [Swarm mode CLI
+commands](/engine/swarm.md#swarm-mode-key-concepts-and-tutorial).
+
+To learn more about service discovery and networking in swarm mode, see
+[Configure service
+discovery](/engine/swarm/networking.md#configure-service-discovery) in the swarm
+mode topics.
+
+
+#### labels
+
+Specify labels for the service. These labels will *only* be set on the service,
+and *not* on any containers for the service.
+
+    version: "3"
+    services:
+      web:
+        image: web
+        deploy:
+          labels:
+            com.example.description: "This label will appear on the web service"
+
+To set labels on containers instead, use the `labels` key outside of `deploy`:
+
+    version: "3"
+    services:
+      web:
+        image: web
+        labels:
+          com.example.description: "This label will appear on all containers for the web service"
+
+
 #### mode
 
 Either `global` (exactly one container per swarm node) or `replicated` (a
@@ -261,6 +629,22 @@ in the [swarm](/engine/swarm/) topics.)
         image: dockersamples/examplevotingapp_worker
         deploy:
           mode: global
+
+#### placement
+
+Specify placement of constraints and preferences. See the docker service create documentation for a full description of the syntax and available types of [constraints](/engine/reference/commandline/service_create.md#specify-service-constraints-constraint) and [preferences](/engine/reference/commandline/service_create.md#specify-service-placement-preferences-placement-pref).
+
+    version: '3'
+    services:
+      db:
+        image: postgres
+        deploy:
+          placement:
+            constraints:
+              - node.role == manager
+              - engine.labels.operatingsystem == ubuntu 14.04
+            preferences:
+              - spread: node.labels.zone
 
 #### replicas
 
@@ -278,57 +662,21 @@ containers that should be running at any given time.
           mode: replicated
           replicas: 6
 
-#### placement
-
-Specify placement constraints. For a full description of the syntax and
-available types of constraints, see the
-[docker service create](/engine/reference/commandline/service_create.md#specify-service-constraints-constraint)
-documentation.
-
-    version: '3'
-    services:
-      db:
-        image: postgres
-        deploy:
-          placement:
-            constraints:
-              - node.role == manager
-              - engine.labels.operatingsystem == ubuntu 14.04
-
-#### update_config
-
-Configures how the service should be updated. Useful for configuring rolling
-updates.
-
-- `parallelism`: The number of containers to update at a time.
-- `delay`: The time to wait between updating a group of containers.
-- `failure_action`: What to do if an update fails. One of `continue` or `pause`
-  (default: `pause`).
-- `monitor`: Duration after each task update to monitor for failure `(ns|us|ms|s|m|h)` (default 0s).
-- `max_failure_ratio`: Failure rate to tolerate during an update.
-
-```none
-version: '3'
-services:
-  vote:
-    image: dockersamples/examplevotingapp_vote:before
-    depends_on:
-      - redis
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-        delay: 10s
-```
-
 #### resources
 
-Configures resource constraints. This replaces the older resource constraint
-options in Compose files prior to version 3 (`cpu_shares`, `cpu_quota`,
-`cpuset`, `mem_limit`, `memswap_limit`, `mem_swappiness`).
+Configures resource constraints.
 
-Each of these is a single value, analogous to its
-[docker service create](/engine/reference/commandline/service_create.md) counterpart.
+> **Note**: This replaces the [older resource constraint options](compose-file-v2.md#cpu-and-other-resources) for non swarm mode in
+Compose files prior to version 3 (`cpu_shares`, `cpu_quota`, `cpuset`,
+`mem_limit`, `memswap_limit`, `mem_swappiness`), as described in [Upgrading
+version 2.x to 3.x](/compose/compose-file/compose-versioning.md#upgrading).
+
+Each of these is a single value, analogous to its [docker service
+create](/engine/reference/commandline/service_create.md) counterpart.
+
+In this general example, the `redis` service is constrained to use no more than
+50M of memory and `0.50` (50%) of available processing time (CPU), and has
+`20M` of memory and `0.25` CPU time reserved (as always available to it).
 
 ```none
 version: '3'
@@ -338,12 +686,36 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.001'
+          cpus: '0.50'
           memory: 50M
         reservations:
-          cpus: '0.0001'
+          cpus: '0.25'
           memory: 20M
 ```
+
+The topics below describe available options to set resource constraints on
+services or containers in a swarm.
+
+> Looking for options to set resources on non swarm mode containers?
+>
+> The options described here are specific to the
+`deploy` key and swarm mode. If you want to set resource constraints
+on non swarm deployments, use
+[Compose file format version 2 CPU, memory, and other resource
+options](compose-file-v2.md#cpu-and-other-resources).
+If you have further questions, please refer to the discussion on the GitHub
+issue [docker/compose/4513](https://github.com/docker/compose/issues/4513){: target="_blank" class="_"}.
+{: .important}
+
+##### Out Of Memory Exceptions (OOME)
+
+If your services or containers attempt to use more memory than the system has
+available, you may experience an Out Of Memory Exception (OOME) and a container,
+or the Docker daemon, might be killed by the kernel OOM killer. To prevent this
+from happening, ensure that your application runs on hosts with adequate memory
+and see [Understand the risks of running out of
+memory](/engine/admin/resource_constraints.md#understand-the-risks-of-running-out-of-memory).
+
 
 #### restart_policy
 
@@ -372,46 +744,53 @@ services:
         window: 120s
 ```
 
-#### labels
+#### update_config
 
-Specify labels for the service. These labels will *only* be set on the service,
-and *not* on any containers for the service.
+Configures how the service should be updated. Useful for configuring rolling
+updates.
 
-    version: "3"
-    services:
-      web:
-        image: web
-        deploy:
-          labels:
-            com.example.description: "This label will appear on the web service"
+- `parallelism`: The number of containers to update at a time.
+- `delay`: The time to wait between updating a group of containers.
+- `failure_action`: What to do if an update fails. One of `continue`, `rollback`, or `pause`
+  (default: `pause`).
+- `monitor`: Duration after each task update to monitor for failure `(ns|us|ms|s|m|h)` (default 0s).
+- `max_failure_ratio`: Failure rate to tolerate during an update.
+- `order`: Order of operations during updates. One of `stop-first` (old task is stopped before starting new one), or `start-first` (new task is started first, and the running tasks will briefly overlap) (default `stop-first`) **Note**: Only supported for v3.4 and higher.
 
-To set labels on containers instead, use the `labels` key outside of `deploy`:
+> **Note**: `order` is only supported for v3.4 and higher of the compose
+file format.
 
-    version: "3"
-    services:
-      web:
-        image: web
-        labels:
-          com.example.description: "This label will appear on all containers for the web service"
+```none
+version: '3.4'
+services:
+  vote:
+    image: dockersamples/examplevotingapp_vote:before
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+        order: stop-first
+```
 
 #### Not supported for `docker stack deploy`
 
 The following sub-options (supported for `docker compose up` and `docker compose run`) are _not supported_ for `docker stack deploy` or the `deploy` key.
 
 - [build](#build)
-- [cgroup_parent](#cgroup-parent)
-- [container_name](#containername)
+- [cgroup_parent](#cgroup_parent)
+- [container_name](#container_name)
 - [devices](#devices)
-- [dns](#devices)
-- [dns_search](#dnssearch)
 - [tmpfs](#tmpfs)
-- [external_links](#externallinks)
+- [external_links](#external_links)
 - [links](#links)
-- [network_mode](#networkmode)
-- [security_opt](#securityopt)
-- [stop_signal](#stopsignal)
+- [network_mode](#network_mode)
+- [security_opt](#security_opt)
+- [stop_signal](#stop_signal)
 - [sysctls](#sysctls)
-- [userns_mode](#usernsmode)
+- [userns_mode](#userns_mode)
 
 >**Tip:** See also, the section on [how to configure volumes
 for services, swarms, and docker-stack.yml
@@ -469,7 +848,6 @@ Simple example:
 > - The `depends_on` option is ignored when
 >   [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
 >   with a version 3 Compose file.
-{: .note-vanilla}
 
 
 ### dns
@@ -481,10 +859,6 @@ Custom DNS servers. Can be a single value or a list.
       - 8.8.8.8
       - 9.9.9.9
 
-> **Note**: This option is ignored when
-> [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
-> with a (version 3) Compose file.
-
 ### dns_search
 
 Custom DNS search domains. Can be a single value or a list.
@@ -493,10 +867,6 @@ Custom DNS search domains. Can be a single value or a list.
     dns_search:
       - dc1.example.com
       - dc2.example.com
-
-> **Note**: This option is ignored when
-> [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
-> with a (version 3) Compose file.
 
 ### tmpfs
 
@@ -542,7 +912,9 @@ Add environment variables from a file. Can be a single value or a list.
 If you have specified a Compose file with `docker-compose -f FILE`, paths in
 `env_file` are relative to the directory that file is in.
 
-Environment variables specified in `environment` override these values.
+Environment variables declared in the [environment](#environment) section
+_override_ these values &ndash; this holds true even if those values are
+empty or undefined.
 
     env_file: .env
 
@@ -562,9 +934,40 @@ beginning with `#` (i.e. comments) are ignored, as are blank lines.
 > build. Use the [args](#args) sub-option of `build` to define build-time
 > environment variables.
 
-The value of `VAL` is used as is and not modified at all. For example if the value is
-surrounded by quotes (as is often the case of shell variables), the quotes will be
-included in the value passed to Compose.
+The value of `VAL` is used as is and not modified at all. For example if the
+value is surrounded by quotes (as is often the case of shell variables), the
+quotes will be included in the value passed to Compose.
+
+Keep in mind that _the order of files in the list is significant in determining
+the value assigned to a variable that shows up more than once_. The files in the
+list are processed from the top down. For the same variable specified in file
+`a.env` and assigned a different value in file `b.env`, if `b.env` is
+listed below (after), then the value from `b.env` stands. For example, given the
+following declaration in `docker_compose.yml`:
+
+```none
+services:
+  some-service:
+    env_file:
+      - a.env
+      - b.env
+```
+
+And the following files:
+
+```none
+# a.env
+VAR=1
+```
+
+and
+
+```none
+# b.env
+VAR=hello
+```
+
+$VAR will be `hello`.
 
 ### environment
 
@@ -615,12 +1018,11 @@ specifying both the container name and the link alias (`CONTAINER:ALIAS`).
 >
 > If you're using the [version 2 or above file format](compose-versioning.md#version-2), the externally-created  containers
 must be connected to at least one of the same networks as the service which is
-linking to them. Starting with Version 2, [links](compose-file-v2#links) are a
+linking to them. [Links](compose-file-v2#links) are a
 legacy option. We recommend using [networks](#networks) instead.
 >
 > This option is ignored when [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
 with a (version 3) Compose file.
-{: .note-vanilla}
 
 ### extra_hosts
 
@@ -650,8 +1052,7 @@ for details on how healthchecks work.
       timeout: 10s
       retries: 3
 
-`interval` and `timeout` are specified as
-[durations](#specifying-durations).
+`interval` and `timeout` are specified as [durations](#specifying-durations).
 
 `test` must be either a string or a list. If it's a list, the first item must be
 either `NONE`, `CMD` or `CMD-SHELL`. If it's a string, it's equivalent to
@@ -661,8 +1062,8 @@ specifying `CMD-SHELL` followed by that string.
     test: ["CMD", "curl", "-f", "http://localhost"]
 
     # As above, but wrapped in /bin/sh. Both forms below are equivalent.
-    test: ["CMD-SHELL", "curl -f http://localhost && echo 'cool, it works'"]
-    test: curl -f https://localhost && echo 'cool, it works'
+    test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+    test: curl -f https://localhost || exit 1
 
 To disable any default healthcheck set by the image, you can use `disable:
 true`. This is equivalent to specifying `test: ["NONE"]`.
@@ -711,6 +1112,16 @@ It's recommended that you use reverse-DNS notation to prevent your labels from c
 
 ### links
 
+>**Warning**: >The `--link` flag is a legacy feature of Docker. It
+may eventually be removed. Unless you absolutely need to continue using it, we
+recommend that you use [user-defined networks](/engine/userguide/networking//#user-defined-networks)
+to facilitate communication between two containers instead of using `--link`.
+One feature that user-defined networks do not support that you can do with
+`--link` is sharing environmental variables between containers. However, you can
+use other mechanisms such as volumes to share environment variables between
+containers in a more controlled way.
+{:.warning}
+
 Link to containers in another service. Either specify both the service name and
 a link alias (`SERVICE:ALIAS`), or just the service name.
 
@@ -723,8 +1134,12 @@ a link alias (`SERVICE:ALIAS`), or just the service name.
 Containers for the linked service will be reachable at a hostname identical to
 the alias, or the service name if no alias was specified.
 
+Links are not required to enable services to communicate - by default,
+any service can reach any other service at that service’s name. (See also, the
+[Links topic in Networking in Compose](/compose/networking.md#links).)
+
 Links also express dependency between services in the same way as
-[depends_on](#dependson), so they determine the order of service startup.
+[depends_on](#depends_on), so they determine the order of service startup.
 
 > **Notes**
 >
@@ -735,7 +1150,6 @@ Links also express dependency between services in the same way as
 > *  This option is ignored when
 > [deploying a stack in swarm mode](/engine/reference/commandline/stack_deploy.md)
 > with a (version 3) Compose file.
-{: .note-vanilla}
 
 ### logging
 
@@ -797,7 +1211,6 @@ specific to the [json-file driver](/engine/admin/logging/overview.md#json-file).
 These particular options are not available on other logging drivers.
 For a full list of supported logging drivers and their options, see
 [logging drivers](/engine/admin/logging/overview.md).
-{: .note-vanilla}
 
 ### network_mode
 
@@ -818,7 +1231,6 @@ the special form `service:[service name]`.
  file.
 >
 >* `network_mode: "host"` cannot be mixed with [links](#links).
-{: .note-vanilla}
 
 ### networks
 
@@ -852,7 +1264,10 @@ The general format is shown here.
             aliases:
              - alias2
 
-In the example below, three services are provided (`web`, `worker`, and `db`), along with two networks (`new` and `legacy`). The `db` service is reachable at the hostname `db` or `database` on the `new` network, and at `db` or `mysql` on the `legacy` network.
+In the example below, three services are provided (`web`, `worker`, and `db`),
+along with two networks (`new` and `legacy`). The `db` service is reachable at
+the hostname `db` or `database` on the `new` network, and at `db` or `mysql` on
+the `legacy` network.
 
     version: '2'
 
@@ -885,7 +1300,11 @@ In the example below, three services are provided (`web`, `worker`, and `db`), a
 
 Specify a static IP address for containers for this service when joining the network.
 
-The corresponding network configuration in the [top-level networks section](#network-configuration-reference) must have an `ipam` block with subnet configurations covering each static address. If IPv6 addressing is desired, the [`enable_ipv6`](#enableipv6) option must be set.
+The corresponding network configuration in the
+[top-level networks section](#network-configuration-reference) must have an
+`ipam` block with subnet configurations covering each static address. If IPv6
+addressing is desired, the [`enable_ipv6`](#enableipv6) option must be set, and
+you must use a version 2.x Compose file, such as the one below.
 
 An example:
 
@@ -911,29 +1330,6 @@ An example:
             subnet: 172.16.238.0/24
           -
             subnet: 2001:3984:3989::/64
-
-#### link_local_ips
-
-Specify a list of link-local IPs. Link-local IPs are special IPs which belong
-to a well known subnet and are purely managed by the operator, usually
-dependent on the architecture where they are deployed. Therefore they are not
-managed by docker (IPAM driver).
-
-Example usage:
-
-    version: '2.1'
-    services:
-      app:
-        image: busybox
-        command: top
-        networks:
-          app_net:
-            link_local_ips:
-              - 57.123.22.11
-              - 57.123.22.13
-    networks:
-      app_net:
-        driver: bridge
 
 ### pid
 
@@ -999,21 +1395,14 @@ configuration. Two different syntax variants are supported.
 > [defined in the top-level `secrets` configuration](#secrets-configuration-reference)
 > of this stack file, or stack deployment will fail.
 
+For more information on secrets, see [secrets](/engine/swarm/secrets.md).
+
 #### Short syntax
 
 The short syntax variant only specifies the secret name. This grants the
 container access to the secret and mounts it at `/run/secrets/<secret_name>`
 within the container. The source name and destination mountpoint are both set
 to the secret name.
-
-> Limitations of short syntax in Docker 1.13.1
->
-> Due to a bug in Docker 1.13.1, using the short syntax currently
-> mounts the secret with permissions `000`, which means secrets defined using
-> the short syntax are unreadable within the container if the command does not
-> run as the `root` user. The workaround is to use the long syntax instead if
-> you use Docker 1.13.1 and the secret must be read by a non-`root` user.
-{: .warning-vanilla}
 
 The following example uses the short syntax to grant the `redis` service
 access to the `my_secret` and `my_other_secret` secrets. The value of
@@ -1169,13 +1558,57 @@ more information.
 
 ### volumes
 
-> **Note**: The top-level
-> [`volumes` option](#volume-configuration-reference) defines
-> a named volume and references it from each service's `volumes` list. This replaces `volumes_from` in earlier versions of the Compose file format. See [Docker Volumes](/engine/userguide/dockervolumes.md) and
-[Volume Plugins](/engine/extend/plugins_volume.md) for general information on volumes.
+Mount host paths or named volumes, specified as sub-options to a service.
 
-Mount host paths or named volumes. Named volumes must be defined in the
-[top-level `volumes` key](#volume-configuration-reference). Use named volumes with [services, swarms, and stack files](#volumes-for-services-swarms-and-stack-files).
+You can mount a host path as part of a definition for a single service, and
+there is no need to define it in the top level `volumes` key.
+
+But, if you want to reuse a volume across multiple services, then define a named
+volume in the [top-level `volumes` key](#volume-configuration-reference). Use
+named volumes with [services, swarms, and stack
+files](#volumes-for-services-swarms-and-stack-files).
+
+> **Note**: The top-level
+> [volumes](#volume-configuration-reference) key defines
+> a named volume and references it from each service's `volumes` list. This replaces `volumes_from` in earlier versions of the Compose file format. See [Use volumes](/engine/admin/volumes/volumes.md) and [Volume
+Plugins](/engine/extend/plugins_volume.md) for general information on volumes.
+
+This example shows a named volume (`mydata`) being used by the `web` service,
+and a bind mount defined for a single service (first path under `db` service
+`volumes`). The `db` service also uses a named volume called `dbdata` (second
+path under `db` service `volumes`), but defines it using the old string format
+for mounting a named volume. Named volumes must be listed under the top-level
+`volumes` key, as shown.
+
+```none
+version: "3.2"
+services:
+  web:
+    image: nginx:alpine
+    volumes:
+      - type: volume
+        source: mydata
+        target: /data
+        volume:
+          nocopy: true
+      - type: bind
+        source: ./static
+        target: /opt/app/static
+
+  db:
+    image: postgres:latest
+    volumes:
+      - "/var/run/postgres/postgres.sock:/var/run/postgres/postgres.sock"
+      - "dbdata:/var/lib/postgresql/data"
+
+volumes:
+  mydata:
+  dbdata:
+```
+
+> **Note**: See [Use volumes](/engine/admin/volumes/volumes.md) and [Volume
+> Plugins](/engine/extend/plugins_volume.md) for general information on volumes.
+
 
 #### Short syntax
 
@@ -1208,10 +1641,10 @@ should always begin with `.` or `..`.
 The long form syntax allows the configuration of additional fields that can't be
 expressed in the short form.
 
-- `type`: the mount type `volume` or `bind`
+- `type`: the mount type `volume`, `bind` or `tmpfs`
 - `source`: the source of the mount, a path on the host for a bind mount, or the
   name of a volume defined in the
-  [top-level `volumes` key](#volume-configuration-reference)
+  [top-level `volumes` key](#volume-configuration-reference). Not applicable for a tmpfs mount.
 - `target`: the path in the container where the volume will be mounted
 - `read_only`: flag to set the volume as read-only
 - `bind`: configure additional bind options
@@ -1222,15 +1655,27 @@ expressed in the short form.
 
 
 ```none
+version: "3.2"
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - type: volume
+        source: mydata
+        target: /data
+        volume:
+          nocopy: true
+      - type: bind
+        source: ./static
+        target: /opt/app/static
+
+networks:
+  webnet:
+
 volumes:
-  - type: volume
-    source: mydata
-    target: /data
-    volume:
-      nocopy: true
-  - type: bind
-    source: ./static
-    target: /opt/app/static
+  mydata:
 ```
 
 > **Note:** The long syntax is new in v3.2
@@ -1257,7 +1702,7 @@ Labs](https://github.com/docker/labs/blob/master/beginner/chapters/votingapp.md)
 configured as a named volume in order to persist the data on the swarm,
 _and_ is constrained to run only on `manager` nodes. Here is the relevant snip-it from that file:
 
-```
+```none
 version: "3"
 services:
   db:
@@ -1271,9 +1716,49 @@ services:
         constraints: [node.role == manager]
 ```
 
+#### Caching options for volume mounts (Docker for Mac)
+
+On Docker 17.04 CE Edge and up, including 17.06 CE Edge and Stable, you can
+configure container-and-host consistency requirements for bind-mounted
+directories in Compose files to allow for better performance on read/write of
+volume mounts. These options address issues specific to `osxfs` file sharing,
+and therefore are only applicable on Docker for Mac.
+
+The flags are:
+
+* `consistent`: Full consistency. The container runtime and the
+host maintain an identical view of the mount at all times.  This is the default.
+
+* `cached`: The host's view of the mount is authoritative. There may be
+delays before updates made on the host are visible within a container.
+
+* `delegated`: The container runtime's view of the mount is
+authoritative. There may be delays before updates made in a container
+are visible on the host.
+
+Here is an example of configuring a volume as `cached`:
+
+```none
+version: '3'
+services:
+  php:
+    image: php:7.1-fpm
+    ports:
+      - 9000
+    volumes:
+      - .:/var/www/project:cached
+```
+
+Full detail on these flags, the problems they solve, and their
+`docker run` counterparts is in the Docker for Mac topic [Performance tuning for
+volume mounts (shared filesystems)](/docker-for-mac/osxfs-caching.md).
+
 ### restart
 
-`no` is the default restart policy, and it will not restart a container under any circumstance. When `always` is specified, the container always restarts. The `on-failure` policy restarts a container if the exit code indicates an on-failure error.
+`no` is the default restart policy, and it will not restart a container under
+any circumstance. When `always` is specified, the container always restarts. The
+`on-failure` policy restarts a container if the exit code indicates an
+on-failure error.
 
     restart: "no"
     restart: always
@@ -1305,7 +1790,7 @@ Each of these is a single value, analogous to its
 ## Specifying durations
 
 Some configuration options, such as the `interval` and `timeout` sub-options for
-[`healthcheck`](#healthcheck), accept a duration as a string in a
+[`check`](#healthcheck), accept a duration as a string in a
 format that looks like this:
 
     2.5s
@@ -1317,14 +1802,33 @@ format that looks like this:
 The supported units are `us`, `ms`, `s`, `m` and `h`.
 
 
+## Specifying byte values
+
+Some configuration options, such as the `shm_size` sub-option for
+[`build`](#build), accept a byte value as a string in a format
+that looks like this:
+
+    2b
+    1024kb
+    2048k
+    300m
+    1gb
+
+The supported units are `b`, `k`, `m` and `g`, and their alternative notation `kb`,
+`mb` and `gb`. Please note that decimal values are not supported at this time.
+
+
 ## Volume configuration reference
 
-While it is possible to declare volumes on the fly as part of the service
-declaration, this section allows you to create named volumes that can be
-reused across multiple services (without relying on `volumes_from`), and are
-easily retrieved and inspected using the docker command line or API.
-See the [docker volume](/engine/reference/commandline/volume_create.md)
-subcommand documentation for more information.
+While it is possible to declare [volumes](#volumes) on the file as part of the
+service declaration, this section allows you to create named volumes (without
+relying on `volumes_from`) that can be reused across multiple services, and are
+easily retrieved and inspected using the docker command line or API. See the
+[docker volume](/engine/reference/commandline/volume_create.md) subcommand
+documentation for more information.
+
+See [Use volumes](/engine/admin/volumes/volumes.md) and [Volume
+Plugins](/engine/extend/plugins_volume.md) for general information on volumes.
 
 Here's an example of a two-service setup where a database's data directory is
 shared with another service as a volume so that it can be periodically backed
@@ -1401,6 +1905,17 @@ refer to it within the Compose file:
         external:
           name: actual-name-of-volume
 
+> External volumes are always created with docker stack deploy
+>
+External volumes that do not exist _will be created_ if you use [docker stack
+deploy](#deploy) to launch the app in [swarm mode](/engine/swarm/index.md)
+(instead of [docker compose up](/compose/reference/up.md)). In swarm mode, a
+volume is automatically created when it is defined by a service. As service
+tasks are scheduled on new nodes,
+[swarmkit](https://github.com/docker/swarmkit/blob/master/README.md) creates the
+volume on the local node. To learn more, see
+[moby/moby#29976](https://github.com/moby/moby/issues/29976).
+
 ### labels
 
 Add metadata to containers using
@@ -1420,6 +1935,24 @@ conflicting with those used by other software.
       - "com.example.department=IT/Ops"
       - "com.example.label-with-empty-value"
 
+### name
+
+> [Added in version 3.4 file format](compose-versioning.md#version-34)
+
+Set a custom name for this volume.
+
+    version: '3.4'
+    volumes:
+      data:
+        name: my-app-data
+
+It can also be used in conjuction with the `external` property:
+
+    version: '3.4'
+    volumes:
+      data:
+        external: true
+        name: my-app-data
 
 ## Network configuration reference
 
@@ -1465,6 +1998,45 @@ discovery](https://github.com/docker/labs/blob/master/networking/A3-overlay-netw
 networking concepts lab on the [Overlay Driver Network
 Architecture](https://github.com/docker/labs/blob/master/networking/concepts/06-overlay-networks.md).
 
+#### host or none
+
+Use the host's networking stack, or no networking. Equivalent to
+`docker run --net=host` or `docker run --net=none`. Only used if you use
+`docker stack` commands. If you use the `docker-compose` command,
+use [network_mode](#network_mode) instead.
+
+The syntax for using built-in networks like `host` and `none` is a little
+different. Define an external network with the name `host` or `none` (which
+Docker has already created automatically) and an alias that Compose can use
+(`hostnet` or `nonet` in these examples), then grant the service access to that
+network, using the alias.
+
+```yaml
+services:
+  web:
+    ...
+    networks:
+      hostnet: {}
+
+networks:
+  hostnet:
+    external:
+      name: host
+```
+
+```yaml
+services:
+  web:
+    ...
+    networks:
+      nonet: {}
+
+networks:
+  nonet:
+    external:
+      name: none
+```
+
 ### driver_opts
 
 Specify a list of options as key-value pairs to pass to the driver for this
@@ -1475,9 +2047,32 @@ documentation for more information. Optional.
         foo: "bar"
         baz: 1
 
+### attachable
+
+> **Note**: Only supported for v3.2 and higher.
+
+Only used when the `driver` is set to `overlay`. If set to `true`, then
+standalone containers can attach to this network, in addition to services. If a
+standalone container attaches to an overlay network, it can communicate with
+services and standalone containers which are also attached to the overlay
+network from other Docker daemons.
+
+```yaml
+networks:
+  mynet1:
+    driver: overlay
+    attachable: true
+```
+
 ### enable_ipv6
 
 Enable IPv6 networking on this network.
+
+> Not supported in Compose File version 3
+>
+> `enable_ipv6` requires you to use a version 2 Compose file, as this directive
+> is not yet supported in Swarm mode.
+{: .warning }
 
 ### ipam
 
@@ -1562,6 +2157,70 @@ refer to it within the Compose file:
         external:
           name: actual-name-of-network
 
+### name
+
+> [Added in version 3.5 file format](compose-versioning.md#version-35)
+
+Set a custom name for this network.
+
+    version: '3.5'
+    networks:
+      network1:
+        name: my-app-net
+
+It can also be used in conjuction with the `external` property:
+
+    version: '3.5'
+    networks:
+      network1:
+        external: true
+        name: my-app-net
+
+## configs configuration reference
+
+The top-level `configs` declaration defines or references
+[configs](/engine/swarm/configs.md) which can be granted to the services in this
+stack. The source of the config is either `file` or `external`.
+
+- `file`: The config is created with the contents of the file at the specified
+  path.
+- `external`: If set to true, specifies that this config has already been
+  created. Docker will not attempt to create it, and if it does not exist, a
+  `config not found` error occurs.
+- `name`: The actual name of the config object in Docker. Introduced with the
+  3.5 file format.
+
+In this example, `my_first_config` will be created (as
+`<stack_name>_my_first_config)`when the stack is deployed,
+and `my_second_config` already exists in Docker.
+
+```none
+configs:
+  my_first_config:
+    file: ./config_data
+  my_second_config:
+    external: true
+```
+
+Another variant for external configs is when the name of the config in Docker
+is different from the name that will exist within the service. The following
+example modifies the previous one to use the external config called
+`redis_config`.
+
+```none
+configs:
+  my_first_config:
+    file: ./config_data
+  my_second_config:
+    external:
+      name: redis_config
+```
+
+You still need to [grant access to the config](#configs) to each service in the
+stack.
+
+
+
 ## secrets configuration reference
 
 The top-level `secrets` declaration defines or references
@@ -1573,6 +2232,8 @@ stack. The source of the secret is either `file` or `external`.
 - `external`: If set to true, specifies that this secret has already been
   created. Docker will not attempt to create it, and if it does not exist, a
   `secret not found` error occurs.
+- `name`: The actual name of the config object in Docker. Introduced with the
+  3.5 file format.
 
 In this example, `my_first_secret` will be created (as
 `<stack_name>_my_first_secret)`when the stack is deployed,
@@ -1586,12 +2247,32 @@ secrets:
     external: true
 ```
 
+Another variant for external secrets is when the name of the secret in Docker
+is different from the name that will exist within the service. The following
+example modifies the previous one to use the external secret called
+`redis_secret`.
+
+```none
+secrets:
+  my_first_secret:
+    file: ./secret_data
+  my_second_secret:
+    external:
+      name: redis_secret
+```
+
 You still need to [grant access to the secrets](#secrets) to each service in the
 stack.
 
 ## Variable substitution
 
 {% include content/compose-var-sub.md %}
+
+## Extension fields
+
+> [Added in version 3.4 file format](compose-versioning.md#version-34).
+
+{% include content/compose-extfields-sub.md %}
 
 ## Compose documentation
 

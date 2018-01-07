@@ -22,7 +22,13 @@ When you run a container with the `-p` argument, for example:
 ```
 $ docker run -p 80:80 -d nginx
 ```
-Docker for Mac will make the container port available at `localhost`.
+Docker for Mac will make whatever is running on port 80 in the container (in this case, `nginx`) available on port 80 of `localhost`. In this example, the host and container ports are the same. What if you need to specify a different host port? If, for example, you already have something running on port 80 of your host machine, you can connect the container to a different port:
+
+```
+$ docker run -p 8081:80 -d nginx
+```
+
+Now, connections to `localhost:8081` will be sent to port 80 in the container. The syntax for `-p` is `HOST_PORT:CLIENT_PORT`.
 
 ### HTTP/HTTPS Proxy Support
 
@@ -47,13 +53,13 @@ http_proxy=http://proxy.example.com:3128
 no_proxy=*.local, 169.254/16
 ```
 
-You can see from the above output that the `HTTP_PROXY`, `http_proxy` and
+You can see from the above output that the `HTTP_PROXY`, `http_proxy`, and
 `no_proxy` environment variables are set. When your proxy configuration changes,
 Docker restarts automatically to pick up the new settings. If you have
 containers that you wish to keep running across restarts, you should consider
-using [restart policies](/engine/reference/run/#restart-policies-restart)
+using [restart policies](/engine/reference/run/#restart-policies-restart).
 
-## Known Limitations, Use Cases, and Workarounds
+## Known limitations, use cases, and workarounds
 
 Following is a summary of current limitations on the Docker for Mac networking
 stack, along with some ideas for workarounds.
@@ -65,8 +71,8 @@ Because of the way networking is implemented in Docker for Mac, you cannot see a
 
 ### I cannot ping my containers
 
-Unfortunately, due to limitations in macOS, we're unable to route traffic to
-containers, and from containers back to the host.
+Docker for Mac is unable to route traffic to containers, and from containers
+back to the host.
 
 ### Per-container IP addressing is not possible
 
@@ -78,11 +84,10 @@ There are two scenarios that the above limitations will affect:
 
 #### I want to connect from a container to a service on the host
 
-The Mac has a changing IP address (or none if you have no network access). Our
-current recommendation is to attach an unused IP to the `lo0` interface on the
-Mac; for example: `sudo ifconfig lo0 alias 10.200.10.1/24`, and make sure that
-your service is listening on this address or `0.0.0.0` (ie not `127.0.0.1`).
-Then containers can connect to this address.
+The Mac has a changing IP address (or none if you have no network access). From
+17.06 onwards our recommendation is to connect to the special Mac-only DNS
+name `docker.for.mac.localhost` which will resolve to the internal IP address
+used by the host.
 
 #### I want to connect to a container from the Mac
 
@@ -94,23 +99,28 @@ container. Note that this is what you have to do even on Linux if the container
 is on an overlay network, not a bridge network, as these are not routed.
 
 The command to run the `nginx` webserver shown in [Getting
-Started](index.md#explore-the-application-and-run-examples) is an example of this.
+Started](/docker-for-mac/index.md#explore-the-application-and-run-examples) is an example of this.
 
-```shell
-docker run -d -p 80:80 --name webserver nginx
+```bash
+$ docker run -d -p 80:80 --name webserver nginx
 ```
 
 To clarify the syntax, the following two commands both expose port `80` on the
 container to port `8000` on the host:
 
-		docker run --publish 8000:80 --name webserver nginx
-		docker run --p 8000:80 --name webserver nginx
+```bash
+$ docker run --publish 8000:80 --name webserver nginx
+
+$ docker run -p 8000:80 --name webserver nginx
+```
 
 To expose all ports, use the `-P` flag. For example, the following command
 starts a container (in detached mode) and the `-P` exposes all ports on the
 container to random ports on the host.
 
-		docker run -d -P --name webserver nginx
+```bash
+$ docker run -d -P --name webserver nginx
+```
 
 See the [run command](/engine/reference/commandline/run.md) for more details on
 publish options used with `docker run`.

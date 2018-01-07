@@ -21,7 +21,7 @@ document guides you through the process of working with automated builds.
 
 ## Prerequisites
 
-To use automated builds you must have an [account on Docker Hub](accounts.md)
+To use automated builds, you must have an [account on Docker Hub](accounts.md)
 and on the hosted repository provider (GitHub or Bitbucket). If you have
 previously linked your Github or Bitbucket account, you must have chosen the
 Public and Private connection type.
@@ -50,7 +50,7 @@ limitation.
 
     The system prompts you to choose between Public and Private and Limited Access. The Public and Private connection type is required if you want to use the Automated Builds.
 
-4. Press Select under Public and Private connection type.
+4. Press **Select** under Public and Private connection type.
 
     The system prompts you to enter your service credentials (Bitbucket or GitHub) to login. For example, Bitbucket's prompt looks like this:
 
@@ -76,7 +76,7 @@ repositories using the `docker push` command.
 
 4. Pick the project to build.
 
-    The system displays the Create Automated Build dialog.
+    The system displays the **Create Automated Build** dialog.
 
     ![Create dialog](images/create-dialog1.png)
 
@@ -85,7 +85,7 @@ repositories using the `docker push` command.
     lives at the root of your source. When it builds an image, Docker tags it with
     the branch name.
 
-6. Customize the automated build by pressing the Click here to customize this behavior link.
+6. Customize the automated build by pressing the **Click here to customize** this behavior link.
 
     ![Create dialog](images/create-dialog.png)
 
@@ -95,7 +95,7 @@ repositories using the `docker push` command.
 
     ![Create dialog](images/regex-help.png)
 
-9. Click Create.
+9. Click **Create**.
 
     The system displays the home page for your AUTOMATED BUILD.
 
@@ -188,9 +188,9 @@ To add a new build:
 
 5. Specify a Tag Name.
 
-6. Press Save Changes.
+6. Press **Save Changes**.
 
-If you make a mistake or want to delete a build, press the - (minus sign) and then Save Changes.
+If you make a mistake or want to delete a build, press the - (minus sign) and then **Save Changes**.
 
 ## Repository links
 
@@ -208,7 +208,7 @@ To add a link:
 
     A remote repository name should be either an official repository name such as `ubuntu` or a public repository name `namespace/repoName`.
 
-3. Press Add.
+3. Press **Add**.
 
     ![Links](images/repo_links.png)
 

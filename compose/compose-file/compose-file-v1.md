@@ -8,12 +8,18 @@ toc_max: 4
 toc_min: 1
 ---
 
+## Reference and guidelines
+
 These topics describe version 1 of the Compose file format. This is the oldest
 version.
 
-For a Compose/Docker Engine compatibility matrix, and detailed guidelines on
-versions and upgrading, see
-[Compose file versions and upgrading](compose-versioning.md).
+## Compose and Docker compatibility matrix
+
+There are several versions of the Compose file format – 1, 2, 2.x, and 3.x The
+table below is a quick look. For full details on what each version includes and
+how to upgrade, see **[About versions and upgrading](compose-versioning.md)**.
+
+{% include content/compose-matrix.md %}
 
 ## Service configuration reference
 
@@ -43,7 +49,7 @@ context.
 
     build: ./dir
 
-> **Notes**
+> **Note**
 >
 > In [version 1 file format](compose-versioning.md#version-1),
 `build` is  different in two ways:
@@ -52,7 +58,6 @@ context.
 >   form that is allowed in Version 2 and up.
 > * Using `build` together with [`image`](#image) is not allowed.
 Attempting to do so results in an error.
-{: .note-vanilla}
 
 #### dockerfile
 
@@ -97,7 +102,7 @@ Override the default command.
 The command can also be a list, in a manner similar to
 [dockerfile](/engine/reference/builder.md#cmd):
 
-    command: [bundle, exec, thin, -p, 3000]
+    command: ["bundle", "exec", "thin", "-p", "3000"]
 
 ### cgroup_parent
 
@@ -170,7 +175,8 @@ Add environment variables from a file. Can be a single value or a list.
 If you have specified a Compose file with `docker-compose -f FILE`, paths in
 `env_file` are relative to the directory that file is in.
 
-Environment variables specified in `environment` override these values.
+Environment variables specified in [environment](#environment) _override_
+these values.
 
     env_file: .env
 
@@ -189,9 +195,40 @@ beginning with `#` (i.e. comments) are ignored, as are blank lines.
 > defined in environment files will _not_ be automatically visible during the
 > build.
 
-The value of `VAL` is used as is and not modified at all. For example if the value is
-surrounded by quotes (as is often the case of shell variables), the quotes will be
-included in the value passed to Compose.
+The value of `VAL` is used as is and not modified at all. For example if the
+value is surrounded by quotes (as is often the case of shell variables), the
+quotes will be included in the value passed to Compose.
+
+Keep in mind that _the order of files in the list is significant in determining
+the value assigned to a variable that shows up more than once_. The files in the
+list are processed from the top down. For the same variable specified in file
+`a.env` and assigned a different value in file `b.env`, if `b.env` is
+listed below (after), then the value from `b.env` stands. For example, given the
+following declaration in `docker_compose.yml`:
+
+```yaml
+services:
+  some-service:
+    env_file:
+      - a.env
+      - b.env
+```
+
+And the following files:
+
+```none
+# a.env
+VAR=1
+```
+
+and
+
+```none
+# b.env
+VAR=hello
+```
+
+$VAR will be `hello`.
 
 ### environment
 
@@ -318,6 +355,9 @@ It's recommended that you use reverse-DNS notation to prevent your labels from c
 Link to containers in another service. Either specify both the service name and
 a link alias (`SERVICE:ALIAS`), or just the service name.
 
+> Links are a legacy option. We recommend using
+> [networks](#networks) instead.
+
     web:
       links:
        - db
@@ -328,7 +368,7 @@ Containers for the linked service will be reachable at a hostname identical to
 the alias, or the service name if no alias was specified.
 
 Links also express dependency between services in the same way as
-[depends_on](#dependson), so they determine the order of service startup.
+[depends_on](#depends_on), so they determine the order of service startup.
 
 > **Note**: If you define both links and [networks](#networks), services with
 > links between them must share at least one network in common in order to
@@ -337,7 +377,7 @@ Links also express dependency between services in the same way as
 ### log_driver
 
 > [Version 1 file format](compose-versioning#version-1) only. In version 2 and up, use
-> [logging](index.md#logging).
+> [logging](/compose/compose-file/index.md#logging).
 
 Specify a log driver. The default is `json-file`.
 
@@ -346,7 +386,7 @@ Specify a log driver. The default is `json-file`.
 ### log_opt
 
 > [Version 1 file format](compose-versioning#version-1) only. In version 2 and up, use
-> [logging](index.md#logging).
+> [logging](/compose/compose-file/index.md#logging).
 
 Specify logging options as key-value pairs. An example of `syslog` options:
 
@@ -356,7 +396,7 @@ Specify logging options as key-value pairs. An example of `syslog` options:
 ### net
 
 > [Version 1 file format](compose-versioning.md#version-1) only. In version 2 and up, use
-> [network_mode](index.md#networkmode) and [networks](index.md#networks).
+> [network_mode](/compose/compose-file/index.md#networkmode) and [networks](/compose/compose-file/index.md#networks).
 
 Network mode. Use the same values as the docker client `--net` parameter.
 The `container:...` form can take a service name instead of a container name or

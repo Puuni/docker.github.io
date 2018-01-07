@@ -12,6 +12,106 @@ known issues for each DTR version.
 You can then use [the upgrade instructions](../admin/upgrade.md),
 to upgrade your installation to the latest release.
 
+## 2.2.10
+
+(20 November 2017)
+
+**Bugs fixed**
+
+* Fixed a bug that caused certain vulnerabilities to not be found during scanning.
+* Fixed a bug in distribution that caused pull timeouts under load if using NFS
+or local storage.
+* Fixed a bug with downloading storage yaml file on Firefox.
+* Fixed a bug where garbage collection ran in a suboptimal mode if scheduled as
+a cron from the UI.
+* Fixed a potential issue with the way we untar files in uploads of the
+vulnerability database.
+* Fixed a bug with not backing up repository team permissions correctly.
+
+**General improvements**
+
+* Improved resilience of garbage collection.
+* Improved logging of garbage collection.
+* Improved memory usage during backup.
+* Improved error handling when uploading invalid vulnerability databases.
+* Improved resilience of DTR `join` operations.
+* Hide secrets on storage config pages.
+
+
+## DTR 2.2.9
+
+(13 September 2017)
+
+**Bugs fixed**
+
+* High severity:
+  * Fixed issue with RethinkDB not starting correctly after restarting a DTR
+  replica.
+  * Fixed GCS storage driver configuration page.
+* Low severity:
+  * Improved error handling in the vulnerability scanner.
+
+## DTR 2.2.8
+
+(24 August 2017)
+
+**New features**
+
+* Added UI support to configure if users should be redirected to the storage
+backend when pulling and pushing images.
+
+**Bugs fixed**
+
+* High severity:
+  * Fixed issue with bootstrapper operations on UCP 2.2.0 (the issue is fixed in
+  UCP 2.2.1 as well).
+  * Fixed issue where containers would stop watching for new configuration and
+  needed to be manually restarted.
+* Low severity:
+  * Improved validations when installing DTR, to prevent installing DTR on
+  old kernels with known bugs.
+
+## DTR 2.2.7
+
+(17 July 2017)
+
+**Bugs fixed**
+
+* Fixed registry DoS vulnerability.  CVE-2017-11468.  Severity: high
+* Fix issue with `docker/dtr` operations in UCP clusters with failed nodes.
+This prevented DTR from being installed or reconfigured.  Severity: medium
+* Silenced incorrect error log in registry container.  Severity: low
+* Remove unused permissions dropdown on teams pages.  Severity: low
+
+
+## DTR 2.2.6
+
+(3 July 2017)
+
+**Bugs fixed**
+
+* High impact
+  * Updated security scanner to reduce false positives for Red Hat Enterprise Linux.  This change introduces a new vulnerability database format.
+* Low impact
+  * Fixed displaying the correct scanning database version in the admin page.
+  * Fixed issue with returning the wrong error code when a user doesn't have access to a repository.
+  * Fixed handling carriage returns in certificates pasted from Windows clients.
+  * Fixed certificate issue when reusing replica IDs after restoring from a backup.
+
+## DTR 2.2.5
+
+(6 June 2017)
+
+**Bugs fixed**
+
+* High impact
+  * Fixed issue with multi-level cache chaining not working with content cache
+  * Fixed pulling by a user whose content cache was deleted
+  * Add support for us-east-2 and other new AWS regions
+* Low impact
+  * Fixed jobrunner crash when RethinkDB is restarted
+  * Removed spurious warnings about RethinkDB using swap
+
 ## DTR 2.2.4
 
 (13 April 2017)

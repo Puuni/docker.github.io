@@ -13,10 +13,10 @@ Repository creation is limited to users in the organization owner's group. This
 allows you to distribute limited access Docker images, and to select which
 Docker Hub users can publish new images.
 
-### Creating and viewing organizations
+### Create and view organizations
 
 You can see which organizations you belong to and add new organizations by
-clicking "Organizations" in the top nav bar.
+clicking **Organizations** in the top nav bar.
 
 ![organizations](images/orgs.png)
 
@@ -36,12 +36,14 @@ Use teams to manage who can interact with your repositories.
 You need to be a member of the organization's "Owners" team to create a new
 team, Hub repository, or automated build. As an "Owner", you then delegate the
 following repository access rights to a team using the "Collaborators" section
-of the repository view:
+of the repository view.
 
-- `Read` access allows a user to view, search, and pull a private repository in the same way as they can a public repository.
-- `Write` access users are able to push to non-automated repositories on the Docker Hub.
-- `Admin` access allows the user to modify the repositories "Description", "Collaborators" rights,
-  "Public/Private" visibility and "Delete".
+Permissions are cumulative. For example, if you have Write permissions, you
+automatically have Read permissions:
+
+- `Read` access allows users to view, search, and pull a private repository in the same way as they can a public repository.
+- `Write` access allows users to push to non-automated repositories on the Docker Hub.
+- `Admin` access allows users to modify the repositories "Description", "Collaborators" rights, "Public/Private" visibility and "Delete".
 
 > **Note**: A User who has not yet verified their email address will only have
 > `Read` access to the repository, regardless of the rights their team

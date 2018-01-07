@@ -10,6 +10,34 @@
 {{ site.data[include.datafolder][include.datafile].short }}
 {% endif %}
 
+{% if site.data[include.datafolder][include.datafile].min_api_version %}
+
+<span class="badge badge-info">API {{ site.data[include.datafolder][include.datafile].min_api_version }}+</span>&nbsp;
+The client and daemon API must both be at least
+{{ site.data[include.datafolder][include.datafile].min_api_version }}
+to use this command. Use the `docker version` command on the client to check
+your client and daemon API versions.
+
+{% endif %}
+
+{% if site.data[include.datafolder][include.datafile].deprecated %}
+
+> This command is deprecated.
+>
+> It may be removed in a future Docker version.
+{: .warning }
+
+{% endif %}
+
+{% if site.data[include.datafolder][include.datafile].experimental %}
+
+> This command is experimental.
+>
+> It should not be used in production environments.
+{: .important }
+
+{% endif %}
+
 {% if site.data[include.datafolder][include.datafile].usage %}
 
 ## Usage
@@ -23,22 +51,58 @@
 
 ## Options
 
-| Name, shorthand | Default | Description |
-| ---- | ------- | ----------- |{% for option in  site.data[include.datafolder][include.datafile].options %}
-| `--{{ option.option }}{% if option.shorthand %}, -{{ option.shorthand }}{% endif %}` | {% if option.default_value and option.default_value != "[]" %}`{{ option.default_value }}`{% endif %} | {{ option.description | replace: "|","&#124;" | strip }} | {% endfor %}
+<table>
+<thead>
+  <tr>
+    <td>Name, shorthand</td>
+    <td>Default</td>
+    <td>Description</td>
+  </tr>
+</thead>
+<tbody>
+{% for option in site.data[include.datafolder][include.datafile].options %}
 
-{% endif %}
+  {% capture min-api %}{% if option.min_api_version %}<span class="badge badge-info">API {{ option.min_api_version }}+</span>&nbsp;{% endif %}{%endcapture%}
+  {% capture stability-string %}{% if option.deprecated and option.experimental %}<span class="badge badge-danger">deprecated</span>&nbsp;<span class="badge badge-warning">experimental</span>&nbsp;{% elsif option.deprecated %}<span class="badge badge-danger">deprecated</span>&nbsp;{% elsif option.experimental %}<span class="badge badge-warning">experimental</span>&nbsp;{% endif %}{% endcapture %}
+  {% capture all-badges %}{% unless min-api == '' and stability-string == '' %}{{ min-api }}{{ stability-string }}<br />{% endunless %}{% endcapture %}
+  {% assign defaults-to-skip = "[],map[],false,0,0s,default,'',\"\"" | split: ',' %}
+  {% capture option-default %}{% if option.default_value %}{% unless defaults-to-skip contains option.default_value or defaults-to-skip == blank %}`{{ option.default_value }}`{% endunless %}{% endif %}{% endcapture %}
+  <tr>
+    <td markdown="span">`--{{ option.option }}{% if option.shorthand %} , -{{ option.shorthand }}{% endif %}`</td>
+    <td markdown="span">{{ option-default }}</td>
+    <td markdown="span">{{ all-badges | strip }}{{ option.description | strip }}</td>
+  </tr>
+
+{% endfor %} <!-- end for option -->
+</tbody>
+</table>
+
+{% endif %} <!-- end if options -->
 
 {% if site.data[include.datafolder][include.datafile].cname %}
 
 ## Child commands
 
-| Command | Description |
-| ------- | ----------- |{% for command in site.data[include.datafolder][include.datafile].cname %}{% capture dataFileName %}{{ command | strip | replace: " ","_" }}{% endcapture %}
-| [{{ command }}]({{ dataFileName | replace: "docker_","" }}/) | {{ site.data[include.datafolder][dataFileName].short }} |{% endfor %}
-
+<table>
+<thead>
+  <tr>
+    <td>Command</td>
+    <td>Description</td>
+  </tr>
+</thead>
+<tbody>
+{% for command in site.data[include.datafolder][include.datafile].cname %}
+  {% capture dataFileName %}{{ command | strip | replace: " ","_" }}{% endcapture %}
+  <tr>
+    <td markdown="span">[{{ command }}]({{ dataFileName | replace: "docker_","" }}/)</td>
+    <td markdown="span">{{ site.data[include.datafolder][dataFileName].short }}</td>
+  </tr>
+{% endfor %}
+</tbody>
+</table>
 {% endif %}
 
+{% if site.data[include.datafolder][include.datafile].pname %}
 {% unless site.data[include.datafolder][include.datafile].pname == include.datafile %}
 
 ## Parent command
@@ -47,9 +111,9 @@
 {% capture parentdatafile %}{{ site.data[include.datafolder][include.datafile].plink | replace: ".yaml", "" }}{% endcapture %}
 
 {% if site.data[include.datafolder][include.datafile].pname == "docker" %}
-{% capture parentDesc %}{{ dockerBaseDesc }}{% endcapture %}
+  {% capture parentDesc %}{{ dockerBaseDesc }}{% endcapture %}
 {% else %}
-{% capture parentDesc %}{{ site.data[include.datafolder][parentdatafile].short }}{% endcapture %}
+  {% capture parentDesc %}{{ site.data[include.datafolder][parentdatafile].short }}{% endcapture %}
 {% endif %}
 
 | Command | Description |
@@ -57,14 +121,29 @@
 | [{{ site.data[include.datafolder][include.datafile].pname }}]({{ parentfile }}) | {{ parentDesc }}|
 
 {% endunless %}
+{% endif %}
 
-{% unless site.data[include.datafolder][include.datafile].pname == "docker" or site.data[include.datafolder][include.datafile].pname == "dockerd" %}
+{% unless site.data[include.datafolder][include.datafile].pname == "docker" or site.data[include.datafolder][include.datafile].pname == "dockerd" or include.datafile=="docker" %}
 
 ## Related commands
 
-| Command | Description |
-| ------- | ----------- |{% for command in site.data[include.datafolder][parentdatafile].cname %}{% capture dataFileName %}{{ command | strip | replace: " ","_" }}{% endcapture %}
-| [{{ command }}]({{ dataFileName | replace: "docker_","" }}/) | {{ site.data[include.datafolder][dataFileName].short }} |{% endfor %}
+<table>
+<thead>
+  <tr>
+    <td>Command</td>
+    <td>Description</td>
+  </tr>
+</thead>
+<tbody>
+{% for command in site.data[include.datafolder][parentdatafile].cname %}
+  {% capture dataFileName %}{{ command | strip | replace: " ","_" }}{% endcapture %}
+  <tr>
+    <td markdown="span">[{{ command }}]({{ dataFileName | replace: "docker_","" }}/)</td>
+    <td markdown="span">{{ site.data[include.datafolder][dataFileName].short }}</td>
+  </tr>
+{% endfor %}
+</tbody>
+</table>
 
 {% endunless %}
 

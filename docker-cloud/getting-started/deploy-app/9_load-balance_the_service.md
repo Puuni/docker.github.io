@@ -14,7 +14,7 @@ the application.
 
 In this example, you need a load balancer that will forward incoming requests to
 both container #1 (web-1) and container #2 (web-2). For this tutorial, you'll
-use <a href="https://github.com/moby/mobycloud-haproxy" target="_blank">Docker Cloud's HAProxy image</a> to load balance, but you could also use other custom load balancers.
+use [Docker Cloud's HAProxy image](https://github.com/docker/dockercloud-haproxy){: target="_blank" class="_"} to load balance, but you could also use other custom load balancers.
 
 You can configure and run the `haproxy` load balancer service from the command line using a command like the example below. (If you are using the Go quickstart, edit the `link-service` value before running the command.)
 
@@ -60,11 +60,11 @@ lb-1                   9793e58b  ▶ Running  dockercloud/haproxy:latest        
 ```
 
 You should notice an URL endpoint in the *PORT* column for haproxy-1. In the
-example above this is `lb-1.my-username.cont.dockerapp.io:80`. Open the `lb-1`
+example above, this is `lb-1.my-username.cont.dockerapp.io:80`. Open the `lb-1`
 URL in your browser or curl from the CLI.
 
-If you refresh or run curl multiple times you should see requests distributed
-between the two containers of in the `web` service. You can see which container
+If you refresh or run curl multiple times, you should see requests distributed
+between the two containers of the `web` service. You can see which container
 responds to your request in the `Hostname` section of the response.
 
 ```none

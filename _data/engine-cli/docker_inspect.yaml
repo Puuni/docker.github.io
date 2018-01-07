@@ -1,25 +1,31 @@
 command: docker inspect
 short: Return low-level information on Docker objects
 long: |-
-  By default, `docker inspect` will render all results in a JSON array. If the container and
-  image have the same name, this will return container JSON for unspecified type.
-  If a format is specified, the given template will be executed for each result.
+  ker inspect provides detailed information on constructs controlled by Docker.
 
-  Go's [text/template](http://golang.org/pkg/text/template/) package
-  describes all the details of the format.
+  By default, `docker inspect` will render results in a JSON array.
 usage: docker inspect [OPTIONS] NAME|ID [NAME|ID...]
 pname: docker
 plink: docker.yaml
 options:
 - option: format
   shorthand: f
+  value_type: string
   description: Format the output using the given Go template
+  deprecated: false
+  experimental: false
 - option: size
   shorthand: s
+  value_type: bool
   default_value: "false"
   description: Display total file sizes if the type is container
+  deprecated: false
+  experimental: false
 - option: type
+  value_type: string
   description: Return JSON for specified type
+  deprecated: false
+  experimental: false
 examples: |-
   ### Get an instance's IP address
 
@@ -81,4 +87,6 @@ examples: |-
   ```bash
   $ docker inspect --format='{{json .Config}}' $INSTANCE_ID
   ```
+deprecated: false
+experimental: false
 

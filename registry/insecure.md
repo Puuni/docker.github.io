@@ -9,10 +9,10 @@ issued by a known CA, you can choose to use self-signed certificates, or use
 your registry over an unencrypted HTTP connection. Either of these choices
 involves security trade-offs and additional configuration steps.
 
-## Deploying a plain HTTP registry
+## Deploy a plain HTTP registry
 
 > **Warning**:
-> it's not possible to use an insecure registry with basic authentication.
+> It's not possible to use an insecure registry with basic authentication.
 {:.warning}
 
 This procedure configures Docker to entirely disregard security for your
@@ -42,7 +42,7 @@ isolated testing or in a tightly controlled, air-gapped environment.
     - First, try using HTTPS.
       - If HTTPS is available but the certificate is invalid, ignore the error
         about the certificate.
-    - If HTTPS is not available, fall back to HTTP.
+      - If HTTPS is not available, fall back to HTTP.
 
 
 2. Restart Docker for the changes to take effect.
@@ -51,10 +51,10 @@ isolated testing or in a tightly controlled, air-gapped environment.
 Repeat these steps on every Engine host that wants to access your registry.
 
 
-## Using self-signed certificates
+## Use self-signed certificates
 
 > **Warning**:
-> using this along with basic authentication requires to **also** trust the certificate into the OS cert store for some versions of docker (see below)
+> Using this along with basic authentication requires to **also** trust the certificate into the OS cert store for some versions of docker (see below)
 {:.warning}
 
 This is more secure than the insecure registry solution.
@@ -71,7 +71,7 @@ This is more secure than the insecure registry solution.
 
     Be sure to use the name `myregistrydomain.com` as a CN.
 
-2.  Use the result to [start your registry with TLS enabled](./deploying.md#get-a-certificate)
+2.  Use the result to [start your registry with TLS enabled](./deploying.md#get-a-certificate).
 
 3.  Instruct every Docker daemon to trust that certificate. The way to do this
     depends on your OS.
@@ -103,7 +103,7 @@ This is more secure than the insecure registry solution.
       Restart Docker.
 
 
-## Troubleshooting insecure registry
+## Troubleshoot insecure registry
 
 This sections lists some common failures and how to recover from them.
 
@@ -146,7 +146,7 @@ update-ca-trust
 $ update-ca-trust enable
 ```
 
-Restart Docker for the  changes to take effect.
+Restart Docker for the changes to take effect.
 
 ### Windows
 
@@ -156,9 +156,10 @@ Open Windows Explorer, right-click the certificate, and choose
 Then, select the following options:
 
 * Store location: local machine
-* Check 'place all certificates in the following store'
-* Click 'Browser', and select 'Trusted Root Certificate Authorities'
-* Click 'Finish'
-[Learn more about managing TLS certificates](https://technet.microsoft.com/en-us/library/cc754841(v=ws.11).aspx#BKMK_addlocal)
+* Check **place all certificates in the following store**
+* Click **Browser**, and select **Trusted Root Certificate Authorities**
+* Click **Finish**
+
+[Learn more about managing TLS certificates](https://technet.microsoft.com/en-us/library/cc754841(v=ws.11).aspx#BKMK_addlocal).
 
 After adding the CA certificate to Windows, restart Docker for Windows.

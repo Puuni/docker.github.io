@@ -135,7 +135,7 @@ entity within the swarm. Do not confuse them with the docker daemon labels for
 [dockerd](../userguide/labels-custom-metadata.md#daemon-labels).
 
 Therefore, node labels can be used to limit critical tasks to nodes that meet
-certain requirements.  For example, schedule only on machines where special
+certain requirements. For example, schedule only on machines where special
 workloads should be run, such as machines that meet [PCI-SS
 compliance](https://www.pcisecuritystandards.org/).
 
@@ -157,7 +157,7 @@ You can promote a worker node to the manager role. This is useful when a
 manager node becomes unavailable or if you want to take a manager offline for
 maintenance. Similarly, you can demote a manager node to the worker role.
 
-> **Note: Maintaining a quorum** Regardless of your reason to promote or demote
+> **Note**: Regardless of your reason to promote or demote
 > a node, you must always maintain a quorum of manager nodes in the
 > swarm. For more information refer to the [Swarm administration guide](admin_guide.md).
 
@@ -184,6 +184,25 @@ Manager node-2 demoted in the swarm.
 `docker node update --role manager` and `docker node update --role worker`
 respectively.
 
+## Install plugins on swarm nodes
+
+{% include edge_only.md section="option" %}
+
+If your swarm service relies on one or more
+[plugins](/engine/extend/plugin_api/), these plugins need to be available on
+every node where the service could potentially be deployed. You can manually
+install the plugin on each node or script the installation. In Docker 17.07 and
+higher, you can also deploy the plugin in a similar way as a global service
+using the Docker API, by specifying a `PluginSpec` instead of a `ContainerSpec`.
+
+> **Note**: There is currently no way to deploy a plugin to a swarm using the
+> Docker CLI or Docker Compose. In addition, it is not possible to install
+> plugins from a private repository.
+
+The [`PluginSpec`](/engine/extend/plugin_api/#json-specification)
+is defined by the plugin developer. To add the plugin to all Docker nodes, use
+the [`service/create`](/engine/api/v1.31/#operation/ServiceCreate) API, passing
+the `PluginSpec` JSON defined in the `TaskTemplate`.
 
 ## Leave the swarm
 
@@ -217,7 +236,7 @@ For instance:
 $ docker node rm node-2
 ```
 
-## Learn More
+## Learn more
 
 * [Swarm administration guide](admin_guide.md)
 * [Docker Engine command line reference](/engine/reference/commandline/docker.md)

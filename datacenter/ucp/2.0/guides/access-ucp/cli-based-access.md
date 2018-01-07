@@ -44,7 +44,6 @@ Then source the `env.sh` script.
 
 ```none
 $ unzip ucp-bundle-dave.lauper.zip
-$ cd ucp-bundle-dave.lauper
 $ eval $(<env.sh)
 ```
 
@@ -52,6 +51,17 @@ The `env.sh` script updates the `DOCKER_HOST` environment variable to make your
 local Docker CLI communicate with UCP. It also updates the `DOCKER_CERT_PATH`
 environment variables to use the client certificates that are included in the
 client bundle you downloaded.
+
+To verify a client certificate bundle has been loaded and the client is
+successfully communicating with UCP, look for `ucp` in the `Server Version`
+returned by `docker version`.
+
+```bash
+{% raw %}
+$ docker version --format '{{.Server.Version}}'
+{% endraw %}
+ucp/2.0.0
+```
 
 From now on, when you use the Docker CLI client, it includes your client
 certificates as part of the request to the Docker Engine.
@@ -67,7 +77,7 @@ this example we'll be using `curl` for making the web requests to the API, and
 To install these tools on a Ubuntu distribution, you can run:
 
 ```none
-$ sudo apt-get update && apt-get install curl jq
+$ sudo apt-get update && sudo apt-get install curl jq
 ```
 
 Then you get an authentication token from UCP, and use it to download the

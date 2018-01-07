@@ -22,23 +22,41 @@ plink: docker.yaml
 options:
 - option: all
   shorthand: a
+  value_type: bool
   default_value: "false"
   description: Show all images (default hides intermediate images)
+  deprecated: false
+  experimental: false
 - option: digests
+  value_type: bool
   default_value: "false"
   description: Show digests
+  deprecated: false
+  experimental: false
 - option: filter
   shorthand: f
+  value_type: filter
   description: Filter output based on conditions provided
+  deprecated: false
+  experimental: false
 - option: format
+  value_type: string
   description: Pretty-print images using a Go template
+  deprecated: false
+  experimental: false
 - option: no-trunc
+  value_type: bool
   default_value: "false"
   description: Don't truncate output
+  deprecated: false
+  experimental: false
 - option: quiet
   shorthand: q
+  value_type: bool
   default_value: "false"
   description: Only show numeric IDs
+  deprecated: false
+  experimental: false
 examples: |-
   ### List the most recently created images
 
@@ -252,22 +270,23 @@ examples: |-
   the specified pattern.
 
   ```bash
-      $ docker images
+  $ docker images
 
-      REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-      busybox             latest              e02e811dd08f        5 weeks ago         1.09 MB
-      busybox             uclibc              e02e811dd08f        5 weeks ago         1.09 MB
-      busybox             musl                733eb3059dce        5 weeks ago         1.21 MB
-      busybox             glibc               21c16b6787c6        5 weeks ago         4.19 MB
+  REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+  busybox             latest              e02e811dd08f        5 weeks ago         1.09 MB
+  busybox             uclibc              e02e811dd08f        5 weeks ago         1.09 MB
+  busybox             musl                733eb3059dce        5 weeks ago         1.21 MB
+  busybox             glibc               21c16b6787c6        5 weeks ago         4.19 MB
   ```
 
   Filtering with `reference` would give:
 
   ```bash
-      $ docker images --filter=reference='busy*:*libc'
-      REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-      busybox             uclibc              e02e811dd08f        5 weeks ago         1.09 MB
-      busybox             glibc               21c16b6787c6        5 weeks ago         4.19 MB
+  $ docker images --filter=reference='busy*:*libc'
+
+  REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+  busybox             uclibc              e02e811dd08f        5 weeks ago         1.09 MB
+  busybox             glibc               21c16b6787c6        5 weeks ago         4.19 MB
   ```
 
   ### Format the output
@@ -325,4 +344,6 @@ examples: |-
   746b819f315e        postgres                  9.3.5
   746b819f315e        postgres                  latest
   ```
+deprecated: false
+experimental: false
 

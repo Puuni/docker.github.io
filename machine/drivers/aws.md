@@ -43,59 +43,72 @@ You can use environment variables:
 ## Options
 
 -   `--amazonec2-access-key`: Your access key ID for the Amazon Web Services API.
--   `--amazonec2-secret-key`: Your secret access key for the Amazon Web Services API.
--   `--amazonec2-session-token`: Your session token for the Amazon Web Services API.
 -   `--amazonec2-ami`: The AMI ID of the instance to use.
+-   `--amazonec2-block-duration-minutes`: AWS spot instance duration in minutes (60, 120, 180, 240, 300, or 360).
+-   `--amazonec2-device-name`: The root device name of the instance.
+-   `--amazonec2-endpoint`: Optional endpoint URL (hostname only or fully qualified URI)
+-   `--amazonec2-iam-instance-profile`: The AWS IAM role name to be used as the instance profile.
+-   `--amazonec2-insecure-transport`: Disable SSL when sending requests
+-   `--amazonec2-instance-type`: The instance type to run.
+-   `--amazonec2-keypair-name`: AWS keypair to use; requires --amazonec2-ssh-keypath
+-   `--amazonec2-monitoring`: Enable CloudWatch Monitoring.
+-   `--amazonec2-open-port`: Make the specified port number accessible from the Internet.
+-   `--amazonec2-private-address-only`: Use the private IP address only.
 -   `--amazonec2-region`: The region to use when launching the instance.
+-   `--amazonec2-request-spot-instance`: Use spot instances.
+-   `--amazonec2-retries`: Set retry count for recoverable failures (use -1 to disable)
+-   `--amazonec2-root-size`: The root disk size of the instance (in GB).
+-   `--amazonec2-secret-key`: Your secret access key for the Amazon Web Services API.
+-   `--amazonec2-security-group`: AWS VPC security group name.
+-   `--amazonec2-session-token`: Your session token for the Amazon Web Services API.
+-   `--amazonec2-spot-price`: Spot instance bid price (in dollars). Require the `--amazonec2-request-spot-instance` flag.
+-   `--amazonec2-ssh-keypath`: Path to Private Key file to use for instance. Matching public key with .pub extension should exist
+-   `--amazonec2-ssh-user`: The SSH Login username, which must match the default SSH user set in the ami used.
+-   `--amazonec2-subnet-id`: AWS VPC subnet ID.
+-   `--amazonec2-tags`: AWS extra tag key-value pairs (comma-separated, e.g. key1,value1,key2,value2).
+-   `--amazonec2-use-ebs-optimized-instance`: Create an EBS Optimized Instance, instance type must support it.
+-   `--amazonec2-use-private-address`: Use the private IP address for docker-machine, but still create a public IP address.
+-   `--amazonec2-userdata`: Path to file with cloud-init user data.
+-   `--amazonec2-volume-type`: The Amazon EBS volume type to be attached to the instance.
 -   `--amazonec2-vpc-id`: Your VPC ID to launch the instance in.
 -   `--amazonec2-zone`: The AWS zone to launch the instance in (i.e. one of a,b,c,d,e).
--   `--amazonec2-subnet-id`: AWS VPC subnet ID.
--   `--amazonec2-security-group`: AWS VPC security group name.
--   `--amazonec2-tags`: AWS extra tag key-value pairs (comma-separated, e.g. key1,value1,key2,value2).
--   `--amazonec2-instance-type`: The instance type to run.
--   `--amazonec2-device-name`: The root device name of the instance.
--   `--amazonec2-root-size`: The root disk size of the instance (in GB).
--   `--amazonec2-volume-type`: The Amazon EBS volume type to be attached to the instance.
--   `--amazonec2-iam-instance-profile`: The AWS IAM role name to be used as the instance profile.
--   `--amazonec2-ssh-user`: The SSH Login username, which must match the default SSH user set in the ami used.
--   `--amazonec2-request-spot-instance`: Use spot instances.
--   `--amazonec2-spot-price`: Spot instance bid price (in dollars). Require the `--amazonec2-request-spot-instance` flag.
--   `--amazonec2-use-private-address`: Use the private IP address for docker-machine, but still create a public IP address.
--   `--amazonec2-private-address-only`: Use the private IP address only.
--   `--amazonec2-monitoring`: Enable CloudWatch Monitoring.
--   `--amazonec2-use-ebs-optimized-instance`: Create an EBS Optimized Instance, instance type must support it.
--   `--amazonec2-ssh-keypath`: Path to Private Key file to use for instance. Matching public key with .pub extension should exist
--   `--amazonec2-retries`: Set retry count for recoverable failures (use -1 to disable)
+
 
 
 #### Environment variables and default values:
 
-| CLI option                               | Environment variable    | Default          |
-| ---------------------------------------- | ----------------------- | ---------------- |
-| `--amazonec2-access-key`                 | `AWS_ACCESS_KEY_ID`     | -                |
-| `--amazonec2-secret-key`                 | `AWS_SECRET_ACCESS_KEY` | -                |
-| `--amazonec2-session-token`              | `AWS_SESSION_TOKEN`     | -                |
-| `--amazonec2-ami`                        | `AWS_AMI`               | `ami-5f709f34`   |
-| `--amazonec2-region`                     | `AWS_DEFAULT_REGION`    | `us-east-1`      |
-| `--amazonec2-vpc-id`                     | `AWS_VPC_ID`            | -                |
-| `--amazonec2-zone`                       | `AWS_ZONE`              | `a`              |
-| `--amazonec2-subnet-id`                  | `AWS_SUBNET_ID`         | -                |
-| `--amazonec2-security-group`             | `AWS_SECURITY_GROUP`    | `docker-machine` |
-| `--amazonec2-tags`                       | `AWS_TAGS`              | -                |
-| `--amazonec2-instance-type`              | `AWS_INSTANCE_TYPE`     | `t2.micro`       |
-| `--amazonec2-device-name`                | `AWS_DEVICE_NAME`       | `/dev/sda1`      |
-| `--amazonec2-root-size`                  | `AWS_ROOT_SIZE`         | `16`             |
-| `--amazonec2-volume-type`                | `AWS_VOLUME_TYPE`       | `gp2`            |
-| `--amazonec2-iam-instance-profile`       | `AWS_INSTANCE_PROFILE`  | -                |
-| `--amazonec2-ssh-user`                   | `AWS_SSH_USER`          | `ubuntu`         |
-| `--amazonec2-request-spot-instance`      | -                       | `false`          |
-| `--amazonec2-spot-price`                 | -                       | `0.50`           |
-| `--amazonec2-use-private-address`        | -                       | `false`          |
-| `--amazonec2-private-address-only`       | -                       | `false`          |
-| `--amazonec2-monitoring`                 | -                       | `false`          |
-| `--amazonec2-use-ebs-optimized-instance` | -                       | `false`          |
-| `--amazonec2-ssh-keypath`                | `AWS_SSH_KEYPATH`       | -                |
-| `--amazonec2-retries`                    | -                       | `5`              |
+| CLI option                               | Environment variable     | Default          |
+|:-----------------------------------------|:-------------------------|:-----------------|
+| `--amazonec2-access-key`                 | `AWS_ACCESS_KEY_ID`      | -                |
+| `--amazonec2-ami`                        | `AWS_AMI`                | `ami-c60b90d1`   |
+| `--amazonec2-block-duration-minutes`     | -                        | -                |
+| `--amazonec2-device-name`                | `AWS_DEVICE_NAME`        | `/dev/sda1`      |
+| `--amazonec2-endpoint`                   | `AWS_ENDPOINT`           | -                |
+| `--amazonec2-iam-instance-profile`       | `AWS_INSTANCE_PROFILE`   | -                |
+| `--amazonec2-insecure-transport`         | `AWS_INSECURE_TRANSPORT` | -                |
+| `--amazonec2-instance-type`              | `AWS_INSTANCE_TYPE`      | `t2.micro`       |
+| `--amazonec2-keypair-name`               | `AWS_KEYPAIR_NAME`       | -                |
+| `--amazonec2-monitoring`                 | -                        | `false`          |
+| `--amazonec2-open-port`                  | -                        | -                |
+| `--amazonec2-private-address-only`       | -                        | `false`          |
+| `--amazonec2-region`                     | `AWS_DEFAULT_REGION`     | `us-east-1`      |
+| `--amazonec2-request-spot-instance`      | -                        | `false`          |
+| `--amazonec2-retries`                    | -                        | `5`              |
+| `--amazonec2-root-size`                  | `AWS_ROOT_SIZE`          | `16`             |
+| `--amazonec2-secret-key`                 | `AWS_SECRET_ACCESS_KEY`  | -                |
+| `--amazonec2-security-group`             | `AWS_SECURITY_GROUP`     | `docker-machine` |
+| `--amazonec2-session-token`              | `AWS_SESSION_TOKEN`      | -                |
+| `--amazonec2-spot-price`                 | -                        | `0.50`           |
+| `--amazonec2-ssh-keypath`                | `AWS_SSH_KEYPATH`        | -                |
+| `--amazonec2-ssh-user`                   | `AWS_SSH_USER`           | `ubuntu`         |
+| `--amazonec2-subnet-id`                  | `AWS_SUBNET_ID`          | -                |
+| `--amazonec2-tags`                       | `AWS_TAGS`               | -                |
+| `--amazonec2-use-ebs-optimized-instance` | -                        | `false`          |
+| `--amazonec2-use-private-address`        | -                        | `false`          |
+| `--amazonec2-userdata`                   | `AWS_USERDATA`           | -                |
+| `--amazonec2-volume-type`                | `AWS_VOLUME_TYPE`        | `gp2`            |
+| `--amazonec2-vpc-id`                     | `AWS_VPC_ID`             | -                |
+| `--amazonec2-zone`                       | `AWS_ZONE`               | `a`              |
 
 ## Default AMIs
 
@@ -109,7 +122,7 @@ By default, the Amazon EC2 driver will use a daily image of Ubuntu 16.04 LTS.
 | ca-central-1   | ami-ca6ddfae |
 | cn-north-1     | ami-79eb2214 |
 | eu-west-1      | ami-8aa67cf9 |
-| eu-central-1   | ami-ab0210c7 |
+| eu-central-1   | ami-fe408091 |
 | sa-east-1      | ami-185de774 |
 | us-east-1      | ami-26d5af4c |
 | us-west-1      | ami-9cbcd2fc |

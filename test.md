@@ -2,18 +2,42 @@
 description: Smoketest page
 title: Testing page
 hide_from_sitemap: true
+toc_min: 1
 ---
+
+Welcome to the Docker documentation test page!
+
+This is a demo of components, tags, styles, tools, and strategies we use for the
+docs. We explain the code behind the published page and demo the effects. So, if
+you want to see, for example, how admonitions and notes are coded in markdown,
+read the section on [Admonitions (notes)](/test/#admonitions-notes) on the web
+published page and study the pre-processed `test.md` to see how they are
+implemented. The Docker documentation team uses this page as "note to self"
+reminders. Since we invite docs suggestions and contributions from the
+community, we've always made the test page generally available.
+
+If you want to understand how something in the docs is coded, use this page is
+as a resource.
+
+If, in the course of making docs updates and suggestions, you develop a new
+strategy or component for the docs, feel free to add a demo and explanation to
+this test page and submit a PR for it so we can review and discuss it.
+
+Cool? Let's dive in!
 
 # Heading 1
 
 Most pages don't actually have a H1 heading. The page title from the metadata is
-automatically inserted.
+automatically inserted. We have included it here to show all heading levels, and
+set front matter as `toc_min: 1` so that it shows in the navigation bar (on-page
+topics).
 
 ## Heading 2
 
-This is the highest heading included in the right-nav. To include more heading
-levels, set `toc_min: 1` in the page-s front-matter. You can go all the way to
-6, but if `toc_min` is geater than `toc_max` then no headings will show.
+By default, this is the highest heading included in the right navigation bar. To
+include more heading levels, set `toc_min: 1` in the page's front-matter (as is
+done on this `test.md` page). You can go all the way to 6, but if `toc_min` is
+geater than `toc_max` then no headings will show.
 
 ### Heading 3
 
@@ -71,6 +95,8 @@ https://github.com/docker/docker.github.io/tree/master/docker-cloud/images
 - [a markdown link that opens in a new window](https://docker.com/){: target="_blank" class="_" }
   (the `class="_"` trick prevents Atom from italicizing the whole rest of the file until it encounters another underscore.)
 
+- [a markdown link to a custom target ID](#custom-target-id)
+
 - <a href="https://docker.com/">an HTML link</a>
 
 - <a href="https://docker.com/" target="_blank" class="_">an HTML link that opens in a new window</a>
@@ -79,8 +105,38 @@ https://github.com/docker/docker.github.io/tree/master/docker-cloud/images
 
 - A link to a Github PR in `docker/docker.github.io`: {% include github-pr.md repo=docker.github.io pr=9999 %}
 
-(you can also specify `org=foo` to use a Github organization other than Docker).
+  - You can specify `org=foo` to use a Github organization other than Docker
 
+- A link to an auto-generated reference page that we pull in during docs builds:
+[/engine/reference/builder/#env](/engine/reference/builder/#env).
+
+  - If you can't find a reference page in the `docker.github.io`
+  GitHub repository, but see it out on `docs.docker.com`, you can
+  surmise that it's probably auto-generated from the codebase.
+  (FYI, to view the markdown source for the file, just click
+  **Edit this page** on `docs.docker.com`. But don't use that URL in your docs.)
+
+  - Go to the file in a web browser, grab everything after the domain name
+  from the URL, and use that as the link in your docs file.
+
+  - Keep in mind that this link won't resolve until you merge the PR and
+  your docs are published on [docs.docker.com](https://docs.docker.com/).
+
+{: id="custom-target-id"}
+
+#### Using a custom target ID
+This topic has a custom target ID above its heading that can be used to link to
+it, in addtion to, or instead of, the default concatenated heading style. The
+format of this ID is `{: id="custom-target-id"}`.
+
+You can use custom targets to link to headings or even paragraphs. You link to
+it as you would any other link, using `#custom-target-id` as the ultimate
+target.
+
+An example of a custom target ID in the documentation is the topic on
+[Compose file version 2 topic on CPU and other resources](/compose/compose-file/compose-file-v2.md#cpu-and-other-resources).
+It has a long heading that breaks the normal markdown linking mechanism,
+so we added a custom ID above the target heading.
 
 ### Images
 
@@ -173,7 +229,7 @@ setting styles directly on your tables! If you set the width on a `<td>`, you
 only need to do it on the first one. If you have a `<th>`, set it there.
 
 > **Note**: If you need to have **markdown** in a **HTML** table, add
-> `markdown="1"` to the HTML for the `<td>` cells that contain the Markdown.
+> `markdown="span"` to the HTML for the `<td>` cells that contain the Markdown.
 
 <table>
   <tr>
@@ -183,7 +239,7 @@ only need to do it on the first one. If you have a `<th>`, set it there.
   <tr>
   <td>This is some test text. <br><br>This is more <b>text</b> on a new line. <br><br>Lorem ipsum dolor <tt>sit amet</tt>, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
     </td>
-    <td>This is some more text about the right hand side. There is a <a href="https://github.com/moby/moby/tree/master/experimental" target="_blank" class="_">link here to the Docker Experimental Features README</a> on GitHub.<br><br>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
+    <td>This is some more text about the right hand side. There is a <a href="https://github.com/docker/docker-ce/blob/master/components/cli/experimental/README.md" target="_blank" class="_">link here to the Docker Experimental Features README</a> on GitHub. In tables, links need to be `<a href="..."></a>`. <br><br>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</td>
   </tr>
   <tr>
   <td>
@@ -209,6 +265,18 @@ To update glossary content, edit `_data/glossary.yaml`.
 To link to a glossary term, link to `glossary.md?term=YourGlossaryTerm` (for
 example, [swarm](glossary.md?term=swarm)).
 
+## Site-wide variables
+
+Look in the top-level `_config.yml` for site-wide variables, such as
+`site.docker_ce_stable_version`. To use them, use Liquid like:
+
+```liquid
+{% raw %}{{ site.docker_ce_stable_version }}{% endraw %}
+```
+
+The current value of `site.docker_ce_stable_version` is
+{{ site.docker_ce_stable_version }}.
+
 ## Mixing Markdown and HTML
 
 You can use <b>span-level</b> HTML tags within Markdown.
@@ -225,6 +293,8 @@ Keep reading for more examples, such as creating tabbed content within the
 page or displaying content as "cards".
 
 ## Jekyll / Liquid tricks
+
+### Assignment
 
 This paragraph is centered and colored green by setting CSS directly on the element.
 **Even though you can do this and it's sometimes the right way to go, remember that if
@@ -248,7 +318,16 @@ You can nest captures within each other to represent more complex logic with Liq
 - In-line variables set via `assign` or `capture` are available for the remainder of the page after they are set.
 - If you include a file, you can pass key-value pairs at the same time. These are available as include variables, like `{{ include.toc_min }}`.
 
+### Image formatting
+
+This image was originally created on a white background and converted to a transparent background (or so it seems). In night-mode, the text still shows traces of the white and looks garbled. To fix this, we apply a white background inline with a class defined in _scss/_night-mode.css (and incorporated into style.css): `img.white-bg { background-color: white; }`.
+
+![alt_text](machine/img/provision-use-case.png){: .white-bg}
+
 ## Bootstrap and CSS tricks
+
+Here are cool components you can include on Docs pages using
+[Bootstrap](http://getbootstrap.com/) and [CSS](https://www.w3schools.com/css/).
 
 ### Tabs
 
@@ -259,11 +338,14 @@ Here are some tabs:
   <li><a data-toggle="tab" data-target="#tab2">TAB 2 HEADER</a></li>
 </ul>
 <div class="tab-content">
-  <div id="tab1" class="tab-pane fade in active">TAB 1 CONTENT</div>
-  <div id="tab2" class="tab-pane fade">TAB 2 CONTENT</div>
+  <div id="tab1" class="tab-pane fade in active">TAB 1 CONTENT<hr></div>
+  <div id="tab2" class="tab-pane fade">TAB 2 CONTENT<hr></div>
 </div>
 
 You need to adjust the `id` and `data-target` values to match your use case.
+
+The `<hr>`'s are included simply to add visual separation between tabbed content
+and the other topics on the page.
 
 If you have Markdown inside the content of the `<div>`, just add `markdown="1"`
 as an attribute in the HTML for the `<div>` and Kramdown will render it.
@@ -278,12 +360,14 @@ as an attribute in the HTML for the `<div>` and Kramdown will render it.
 
 - list item 1
 - list item 2
+<hr>
 </div>
 <div id="tab4" class="tab-pane fade" markdown="1">
 #### Another Markdown header
 
 - list item 3
 - list item 4
+<hr>
 </div>
 </div>
 
@@ -303,8 +387,8 @@ other tab set to match.
   <li><a data-toggle="tab" data-target="#python" data-group="python">Python</a></li>
 </ul>
 <div class="tab-content">
-  <div id="go" class="tab-pane fade in active">Go content here</div>
-  <div id="python" class="tab-pane fade in">Python content here</div>
+  <div id="go" class="tab-pane fade in active">Go content here<hr></div>
+  <div id="python" class="tab-pane fade in">Python content here<hr></div>
 </div>
 
 And some content between the two sets, just for fun...
@@ -314,8 +398,8 @@ And some content between the two sets, just for fun...
   <li><a data-toggle="tab" data-target="#python-2" data-group="python">Python</a></li>
 </ul>
 <div class="tab-content">
-  <div id="go-2" class="tab-pane fade in active">Go content here</div>
-  <div id="python-2" class="tab-pane fade in">Python content here</div>
+  <div id="go-2" class="tab-pane fade in active">Go content here<hr></div>
+  <div id="python-2" class="tab-pane fade in">Python content here<hr></div>
 </div>
 
 
@@ -325,7 +409,6 @@ In a Bootstrap row, your columns need to add up to 12. Here are three cards in
 a row, each of which takes up 1/3 (4/12) of the row. You need a couple `<br />`s
 to clear the row before.<br /><br />
 
-
 <div class="row">
   <div class="panel col-xs-12 col-md-4">This will take up 1/3 of the row unless the screen is small,
 then it will take up the whole row.</div>
@@ -333,6 +416,86 @@ then it will take up the whole row.</div>
 then it will take up the whole row.</div>
   <div class="panel col-xs-12 col-md-4">This will take up 1/3 of the row unless the screen is small,
 then it will take up the whole row.</div>
+</div>
+
+### Expand/Collapse accordions
+
+You can use the Bootstrap and CSS to add expand/collapse accordions. This
+implementation makes use of the `.panel-heading` classes in
+[`_utilities.scss`](/_scss/_utilities.scss), along with [FontAwesome
+icons](http://fontawesome.io/cheatsheet/){: target="_blank" class="_" }
+<i class="fa fa-caret-down" aria-hidden="true"></i> (fa-caret-down) and
+<i class="fa fa-caret-up" aria-hidden="true"></i> (fa-caret-up).
+
+Adding `block` to the `div` class `collapse` gives you some padding around the
+sample content. This works nicely for standard text. If you have a code sample,
+the padding renders as white space around the code block grey background. If we
+don't like this effect, we can remove `block` for code samples.
+
+The `style="cursor: pointer"` tag enables the expand/collapse functionality to
+work on mobile. (You can use the [Xcode iPhone simulator](https://developer.apple.com/library/content/documentation/IDEs/Conceptual/iOS_Simulator_Guide/GettingStartedwithiOSSimulator/GettingStartedwithiOSSimulator.html#//apple_ref/doc/uid/TP40012848-CH5-SW4){: target="_blank" class="_" } to test on mobile.)
+
+There are a lot of samples out there for Bootstrap accordions. This is the model
+we used: [PPxOJX accordion sample with HTML and
+CSS](https://codepen.io/anon/pen/PPxOJX){: target="_blank" class="_" }. (Here is
+another example, but it uses Javascript, whereas the implementation shown
+[here](https://www.bootply.com/89084){: target="_blank" class="_" } is Bootstrap
+and CSS only.)
+
+> Make sure `data-target`'s and `id`'s match, and are unique
+>
+>For each drop-down, the value for `data-target` and
+`collapse` `id` must match, and id's must be unique per page. In this example,
+we name these `collapseSample1` and `collapseSample2`. Check out the
+[Compose file structure example](/compose/compose-file/index.md#compose-file-structure-and-examples)
+to see another example.
+{: .important-vanilla}
+
+<div class="panel panel-default">
+    <div class="panel-heading collapsed" data-toggle="collapse" data-target="#collapseSample1" style="cursor: pointer">
+    Docker hello-world example
+    <i class="chevron fa fa-fw"></i></div>
+    <div class="collapse block" id="collapseSample1">
+<pre><code>
+$ docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+b04784fba78d: Pull complete
+Digest: sha256:f3b3b28a45160805bb16542c9531888519430e9e6d6ffc09d72261b0d26ff74f
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://cloud.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/engine/userguide/
+
+</code></pre>
+    </div>
+    <div class="panel-heading collapsed" data-toggle="collapse" data-target="#collapseSample2"  style="cursor: pointer"> Another Sample <i class="chevron fa fa-fw"></i></div>
+    <div class="collapse block" id="collapseSample2">
+<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
+fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+culpa qui officia deserunt mollit anim id est laborum.</p>
+  </div>
 </div>
 
 ### Columnar text
@@ -364,6 +527,12 @@ break the Markdown block up. This example does it with Markdown. You can't have 
 break the Markdown block up.
 {: style="column-count: 3 "}
 
+### Badges
+
+You can have <span class="badge badge-info">badges</span>. You can also have
+<span class="badge badge-warning">yellow badges</span> or
+<span class="badge badge-danger">red badges</span>.
+
 ## Running in-page Javascript
 
 If you need to run custom Javascript within a page, and it depends upon JQuery
@@ -377,18 +546,22 @@ Bootstrap JS are loaded.
 
 Current styles for admonitions in
 [`_scss/_notes.scss`](https://github.com/docker/docker.github.io/blob/master/_scss/_notes.scss)
-support two broad categories of admonitions: those with prefixed text (**Note:**,
-**Important:**, **Warning**) and those with prefixed icons.
+support these broad categories of admonitions:
 
-The new styles (with icons) are defined in a way that will not impact admonitions
-formatted with the original styles (prefixed text), so notes in your
-published documents won't be adversely affected.
+- Notes in the old style (no Liquid tag required)
+- Notes with a prefixed icon (no Liquid tag required)
+- Important and Warning admonitions, which take `{: .important}` and `{: .warning}` tags, respectively
+
+The new styles include prepended icons, color sidebars, and bold color titles
+for multi-paragraph notes, but no auto-prepended text. These are defined in a
+way that will not impact admonitions formatted with the original styles, so
+notes in your published documents won't be adversely affected.
 
 Examples of both styles are shown below.
 
 ### Examples (original styles, prefix words)
 
-Admonitions with prefixed text use the following class tags, as shown in the examples.
+Admonitions with prefixed icons use the following class tags, as shown in the examples.
 
 * **Note:** No class tag is needed for standard notes.
 * **Important:** Use the `important` class.
@@ -396,9 +569,6 @@ Admonitions with prefixed text use the following class tags, as shown in the exa
 
 
 > **Note**: This is a note using the old note style
-
-> **Note**: This is a note using
-> the old style and has multiple lines, but a single paragraph
 
 > Pssst, wanna know something?
 >
@@ -433,39 +603,11 @@ Admonitions with prefixed text use the following class tags, as shown in the exa
 >
 > And another sentence to top it all off.
 
-### Examples with FontAwesome icons
+> **Important**: Single paragraph important note with the prefix word "important" manually typed in as bold at the beginning.
+{: .important}
 
->  Pssst, wanna know something?
->
-> You include a small description here telling users to be on the lookout
->
-> This is an example of a note using the `{: .note-vanilla}` tag to get an icon instead of a "Note" prefix, and write your own note title.
-{: .note-vanilla}
-
-
-> It's not safe out there, take this Moby with you
->
-> Use `{: .important-vanilla}` after your important to get an "important" icon.
-{: .important-vanilla}
-
-> Ouch, don't touch that hot Docker engine!
->
-> Use `{: .warning-vanilla}` after your warning to get an icon instead of a "Warning" prefix.
->
-> You can also add more paragraphs here if your explanation is
- super complex.
-{: .warning-vanilla}
-
-### Examples with both prefixed word and icon
-
-The current CSS also supports this kind of of admonition.
-
-> **Notes**
->
-> * This is a note about a thing.
->
-> *  This is another note about the same thing.
-{: .note-vanilla}
+> **Warning**: Single paragraph warning with the prefix word "warning" manually typed in as bold at the beginning.
+{: .warning}
 
 ## Code blocks
 
@@ -502,7 +644,7 @@ $ some other command
 $ echo "deb https://packages.docker.com/1.12/apt/repo ubuntu-trusty main" | sudo tee /etc/apt/sources.list.d/docker.list
 ```
 
-### GO
+### Go
 
 ```go
 incoming := map[string]interface{}{

@@ -87,7 +87,7 @@ use unless you have substantial experience with ZFS on Linux.
 
     Save and close the file.
 
-4.  Start docker. Use `docker info` to verify that the storage driver is `zfs`.
+4.  Start Docker. Use `docker info` to verify that the storage driver is `zfs`.
 
     ```bash
     $ sudo docker info
@@ -105,8 +105,8 @@ use unless you have substantial experience with ZFS on Linux.
        Space Available: 103498395648
        Parent Quota: no
        Compression: off
-      <output truncated>
-      ```
+    <output truncated>
+    ```
 
 ## Manage `zfs`
 
@@ -133,6 +133,11 @@ Edit `/etc/docker/daemon.json` and add the following:
   "storage-opts": ["size=256M"]
 }
 ```
+
+See all storage options for each storage driver:
+
+- [Stable](/engine/reference/commandline/dockerd.md#storage-driver-options)
+- [Edge](/edge/engine/reference/commandline/dockerd.md#storage-driver-options)
 
 Save and close the file, and restart Docker.
 
@@ -198,7 +203,7 @@ When you start a container, the following steps happen in order:
     128k.
 
 
-## How container reads and writes work with `devicemapper`
+## How container reads and writes work with `zfs`
 
 ### Reading files
 

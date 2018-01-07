@@ -1,6 +1,6 @@
 ---
 description: Hints, tips and guidelines for writing clean, reliable Dockerfiles
-keywords: Examples, Usage, base image, docker, documentation, dockerfile, best practices, hub, official repo
+keywords: parent image, images, dockerfile, best practices, hub, official repo
 redirect_from:
 - /articles/dockerfile_best-practices/
 - /engine/articles/dockerfile_best-practices/
@@ -17,13 +17,11 @@ specific set of instructions. You can learn the basics on the
 you’re new to writing `Dockerfile`s, you should start there.
 
 This document covers the best practices and methods recommended by Docker,
-Inc. and the Docker community for creating easy-to-use, effective
-`Dockerfile`s. We strongly suggest you follow these recommendations (in fact,
-if you’re creating an Official Image, you *must* adhere to these practices).
+Inc. and the Docker community for building efficient images. To see many of
+these practices and recommendations in action, check out the Dockerfile for
+[buildpack-deps](https://github.com/docker-library/buildpack-deps/blob/master/jessie/Dockerfile).
 
-You can see many of these practices and recommendations in action in the [buildpack-deps `Dockerfile`](https://github.com/docker-library/buildpack-deps/blob/master/jessie/Dockerfile).
-
-> Note: for more detailed explanations of any of the Dockerfile commands
+> **Note**: for more detailed explanations of any of the Dockerfile commands
 >mentioned here, visit the [Dockerfile Reference](../../reference/builder.md) page.
 
 ## General guidelines and recommendations
@@ -40,12 +38,77 @@ stateless fashion.
 
 ### Use a .dockerignore file
 
-In most cases, it's best to put each Dockerfile in an empty directory. Then,
-add to that directory only the files needed for building the Dockerfile. To
-increase the build's performance, you can exclude files and directories by
-adding a `.dockerignore` file to that directory as well. This file supports
-exclusion patterns similar to `.gitignore` files. For information on creating one,
-see the [.dockerignore file](../../reference/builder.md#dockerignore-file).
+The current working directory where you are located when you issue a
+`docker build` command is called the _build context_, and the `Dockerfile` must
+be somewhere within this build context. By default, it is assumed to be in the
+current directory, but you can specify a different location by using the `-f`
+flag. Regardless of where the `Dockerfile` actually lives, all of the recursive
+contents of files and directories in the current directory are sent to the
+Docker daemon as the _build context_. Inadvertently including files that are not
+necessary for building the image results in a larger build context and larger
+image size. These in turn can increase build time, time to pull and push the
+image, and the runtime size of containers. To see how big your build context
+is, look for a message like the following, when you build your `Dockerfile`.
+
+```none
+Sending build context to Docker daemon  187.8MB
+```
+
+To exclude files which are not relevant to the build, without restructuring your
+source repository, use a `.dockerignore` file. This file supports
+exclusion patterns similar to `.gitignore` files. For information on creating
+one, see the [.dockerignore file](../../reference/builder.md#dockerignore-file).
+In addition to using a `.dockerignore` file, check out the information below
+on [multi-stage builds](#use-multi-stage-builds).
+
+### Use multi-stage builds
+
+If you use Docker 17.05 or higher, you can use
+[multi-stage builds](/engine/userguide/eng-image/multistage-build.md) to
+drastically reduce the size of your final image, without the need to
+jump through hoops to reduce the number of intermediate layers or remove
+intermediate files during the build.
+
+Images being built by the final stage only, you can most of the time benefit
+both the build cache and minimize images layers.
+
+Your build stage may contain several layers, ordered from the less frequently changed
+to the more frequently changed for example:
+
+* Install tools you need to build your application
+
+* Install or update library dependencies
+
+* Generate your application
+
+A Dockerfile for a go application could look like:
+
+```
+FROM golang:1.9.2-alpine3.6 AS build
+
+# Install tools required to build the project
+# We will need to run `docker build --no-cache .` to update those dependencies
+RUN apk add --no-cache git
+RUN go get github.com/golang/dep/cmd/dep
+
+# Gopkg.toml and Gopkg.lock lists project dependencies
+# These layers will only be re-built when Gopkg files are updated
+COPY Gopkg.lock Gopkg.toml /go/src/project/
+WORKDIR /go/src/project/
+# Install library dependencies
+RUN dep ensure -vendor-only
+
+# Copy all project and build it
+# This layer will be rebuilt when ever a file has changed in the project directory
+COPY . /go/src/project/
+RUN go build -o /bin/project
+
+# This results in a single layer image
+FROM scratch
+COPY --from=build /bin/project /bin/project
+ENTRYPOINT ["/bin/project"]
+CMD ["--help"]
+```
 
 ### Avoid installing unnecessary packages
 
@@ -77,9 +140,19 @@ If containers depend on each other, you can use [Docker container networks](http
 
 ### Minimize the number of layers
 
-You need to find the balance between readability (and thus long-term
-maintainability) of the `Dockerfile` and minimizing the number of layers it
-uses. Be strategic and cautious about the number of layers you use.
+Prior to Docker 17.05, and even more, prior to Docker 1.10, it was important
+to minimize the number of layers in your image. The following improvements have
+mitigated this need:
+
+- In Docker 1.10 and higher, only `RUN`, `COPY`, and `ADD` instructions create
+  layers. Other instructions create temporary intermediate images, and no longer
+  directly increase the size of the build.
+
+- Docker 17.05 and higher add support for
+  [multi-stage builds](multistage-build.md), which allow you to copy only the
+  artifacts you need into the final image. This allows you to include tools and
+  debug information in your intermediate build stages without increasing the
+  size of the final image.
 
 ### Sort multi-line arguments
 
@@ -110,7 +183,7 @@ However, if you do let Docker use its cache then it is very important to
 understand when it will, and will not, find a matching image. The basic rules
 that Docker will follow are outlined below:
 
-* Starting with a base image that is already in the cache, the next
+* Starting with a parent image that is already in the cache, the next
 instruction is compared against all child images derived from that base
 image to see if one of them was built using the exact same instruction. If
 not, the cache is invalidated.
@@ -145,8 +218,8 @@ various instructions available for use in a `Dockerfile`.
 [Dockerfile reference for the FROM instruction](../../reference/builder.md#from)
 
 Whenever possible, use current Official Repositories as the basis for your
-image. We recommend the [Debian image](https://hub.docker.com/_/debian/)
-since it’s very tightly controlled and kept minimal (currently under 150 mb),
+image. We recommend the [Alpine image](https://hub.docker.com/_/alpine/)
+since it’s very tightly controlled and kept minimal (currently under 5 mb),
 while still being a full distribution.
 
 ### LABEL
@@ -156,8 +229,7 @@ while still being a full distribution.
 You can add labels to your image to help organize images by project, record
 licensing information, to aid in automation, or for other reasons. For each
 label, add a line beginning with `LABEL` and with one or more key-value pairs.
-The following examples show the different acceptable formats. Explanatory comments
-are included inline.
+The following examples show the different acceptable formats. Explanatory comments are included inline.
 
 >**Note**: If your string contains spaces, it must be quoted **or** the spaces
 must be escaped. If your string contains inner quote characters (`"`), escape
@@ -169,10 +241,21 @@ LABEL com.example.version="0.0.1-beta"
 LABEL vendor="ACME Incorporated"
 LABEL com.example.release-date="2015-02-12"
 LABEL com.example.version.is-production=""
+```
 
+An image can have more than one label. Prior to Docker 1.10, it was recommended
+to combine all labels into a single `LABEL` instruction, to prevent extra layers
+from being created. This is no longer necessary, but combining labels is still
+supported.
+
+```conf
 # Set multiple labels on one line
 LABEL com.example.version="0.0.1-beta" com.example.release-date="2015-02-12"
+```
 
+The above can also be written as:
+
+```conf
 # Set multiple labels at once, using line-continuation characters to break long lines
 LABEL vendor=ACME\ Incorporated \
       com.example.is-beta= \
@@ -181,10 +264,11 @@ LABEL vendor=ACME\ Incorporated \
       com.example.release-date="2015-02-12"
 ```
 
-See [Understanding object labels](../labels-custom-metadata.md) for
-guidelines about acceptable label keys and values. For information about
-querying labels, refer to the items related to filtering in
-[Managing labels on objects](../labels-custom-metadata.md#managing-labels-on-objects).
+See [Understanding object labels](/engine/userguide/labels-custom-metadata.md)
+for guidelines about acceptable label keys and values. For information about
+querying labels, refer to the items related to filtering in [Managing labels on
+objects](../labels-custom-metadata.md#managing-labels-on-objects). See also
+[LABEL](/engine/reference/builder/#label) in the Dockerfile reference.
 
 ### RUN
 
@@ -201,14 +285,14 @@ Probably the most common use-case for `RUN` is an application of `apt-get`. The
 out for.
 
 You should avoid `RUN apt-get upgrade` or `dist-upgrade`, as many of the
-“essential” packages from the base images won't upgrade inside an unprivileged
-container. If a package contained in the base image is out-of-date, you should
-contact its maintainers.
-If you know there’s a particular package, `foo`, that needs to be updated, use
+“essential” packages from the parent images won't upgrade inside an
+[unprivileged container](https://docs.docker.com/engine/reference/run/#security-configuration).
+If a package contained in the parent image is out-of-date, you should contact its
+maintainers. If you know there’s a particular package, `foo`, that needs to be updated, use
 `apt-get install -y foo` to update automatically.
 
-Always combine  `RUN apt-get update` with `apt-get install` in the same `RUN`
-statement, for example:
+Always combine `RUN apt-get update` with `apt-get install` in the same `RUN`
+statement. For example:
 
         RUN apt-get update && apt-get install -y \
             package-bar \
@@ -513,11 +597,19 @@ parts of your image.
 
 If a service can run without privileges, use `USER` to change to a non-root
 user. Start by creating the user and group in the `Dockerfile` with something
-like `RUN groupadd -r postgres && useradd -r -g postgres postgres`.
+like `RUN groupadd -r postgres && useradd --no-log-init -r -g postgres postgres`.
 
 > **Note**: Users and groups in an image get a non-deterministic
 > UID/GID in that the “next” UID/GID gets assigned regardless of image
 > rebuilds. So, if it’s critical, you should assign an explicit UID/GID.
+
+> **Note**: Due to an [unresolved bug](https://github.com/golang/go/issues/13548)
+> in the Go archive/tar package's handling of sparse files, attempting to
+> create a user with a sufficiently large UID inside a Docker container can
+> lead to disk exhaustion as `/var/log/faillog` in the container layer is
+> filled with NUL (\0) characters.  Passing the `--no-log-init` flag to
+> useradd works around this issue.  The Debian/Ubuntu `adduser` wrapper
+> does not support the `--no-log-init` flag and should be avoided.
 
 You should avoid installing or using `sudo` since it has unpredictable TTY and
 signal-forwarding behavior that can cause more problems than it solves. If
@@ -552,7 +644,7 @@ A Docker build executes `ONBUILD` commands before any command in a child
 `ONBUILD` is useful for images that are going to be built `FROM` a given
 image. For example, you would use `ONBUILD` for a language stack image that
 builds arbitrary user software written in that language within the
-`Dockerfile`, as you can see in [Ruby’s `ONBUILD` variants](https://github.com/docker-library/ruby/blob/master/2.1/onbuild/Dockerfile).
+`Dockerfile`, as you can see in [Ruby’s `ONBUILD` variants](https://github.com/docker-library/ruby/blob/master/2.4/jessie/onbuild/Dockerfile).
 
 Images built from `ONBUILD` should get a separate tag, for example:
 `ruby:1.9-onbuild` or `ruby:2.0-onbuild`.

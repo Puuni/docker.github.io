@@ -39,8 +39,8 @@ temporarily unable to:
 
 To minimize the impact of the backup policy on your business, you should:
 
-* Configure UCP for high availability. This allows load-balancing user requests
-across multiple UCP manager nodes.
+* Configure UCP for [high availability](configure/set-up-high-availability.md).
+  This allows load-balancing user requests across multiple UCP manager nodes.
 * Schedule the backup to take place outside business hours.
 
 ## Backup command
@@ -49,7 +49,7 @@ The example below shows how to create a backup of a UCP manager node and
 verify its contents:
 
 ```none
-# Create a backup, encrypt it, and store it on /tmp/backup.tar
+# Create a backup and store it on /tmp/backup.tar
 $ docker run --rm -i --name ucp \
   -v /var/run/docker.sock:/var/run/docker.sock \
   {{ page.docker_image }} backup --interactive > /tmp/backup.tar
@@ -77,14 +77,14 @@ $ gpg --decrypt /tmp/backup.tar | tar --list
 ## Restore your cluster
 
 The restore command can be used to create a new UCP cluster from a backup file.
-When restoring, make sure you use the same version of the `docker/ucp` image that you've used to create the backup.
-After the restore operation is complete, the following data will be recovered
-from the backup file:
+When restoring, make sure you use the same version of the `docker/ucp` image
+that you've used to create the backup. After the restore operation is complete,
+the following data will be recovered from the backup file:
 
 * Users, teams, and permissions.
 * All UCP configuration options available under `Admin Settings`, such as the
-DDC subscription license, scheduling options, Content Trust and authentication
-backends.
+  DDC subscription license, scheduling options, Content Trust and authentication
+  backends.
 
 There are two ways to restore a UCP cluster:
 
@@ -95,6 +95,7 @@ swarm will be created and UCP will be restored on top.
 
 In order to restore an existing UCP installation from a backup, you will need to
 first uninstall UCP from the cluster by using the `uninstall-ucp` command.
+[Learn to uninstall a UCP cluster](install/uninstall.md).
 
 The example below shows how to restore a UCP cluster from an existing backup
 file, presumed to be located at `/tmp/backup.tar`:
@@ -148,9 +149,9 @@ manager failures, the system should be configured for [high availability](config
    `uninstall-ucp` command.
 4. Perform a restore operation on the recovered swarm manager node.
 5. Log in to UCP and browse to the nodes page, or use the CLI `docker node ls`
-   command. 
+   command.
 6. If any nodes are listed as `down`, you'll have to manually [remove these
-   nodes](../configure/scale-your-cluster.md) from the cluster and then re-join
+   nodes](configure/scale-your-cluster.md) from the cluster and then re-join
    them using a `docker swarm join` operation with the cluster's new join-token.
 
 ## Where to go next

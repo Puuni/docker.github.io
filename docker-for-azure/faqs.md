@@ -1,7 +1,7 @@
 ---
 description: Frequently asked questions
 keywords: azure faqs
-title: Docker for Azure Frequently asked questions (FAQ)
+title: Docker for Azure frequently asked questions (FAQ)
 toc_max: 2
 ---
 
@@ -17,7 +17,7 @@ Two different download channels are available for Docker for Azure:
 
 * The **edge channel** provides a deployment with new features we are working on,
   but is not necessarily fully tested. It comes with the experimental version of
-  Docker Engine. Bugs, crashes and issues are more likely to occur with the edge
+  Docker Engine. Bugs, crashes, and issues are more likely to occur with the edge
   cluster, but you get a chance to preview new functionality, experiment, and provide
   feedback as the deployment evolve. Releases are typically more frequent than for
   stable, often one or more per month. Usage statistics and crash reports are sent
@@ -72,8 +72,21 @@ $ sudo ping 10.0.0.4
 > **Note**: Access to Docker for Azure and Azure happens through a shell container that itself runs on Docker.
 
 
+## What are the Editions containers running after deployment?
+
+In order for our editions to deploy properly and for load balancer integrations to happen, we run a few containers. They are as follow:
+
+| Container name | Description |
+|---|---|
+| `init`  | Sets up the swarm and makes sure that the stack came up properly. (checks manager+worker count).|
+| `agent` | This is our shell/ssh container. When you SSH into an instance, you're actually in this container.|
+| `meta`  | Assist in creating the swarm cluster, giving privileged instances the ability to join the swarm.|
+| `l4controller` | Listens for ports exposed at the docker CLI level and opens them in the load balancer.|
+| `logger` | Our log aggregator. This allows us to send all docker logs to the storage account.|
+
+
 ## What are the different Azure Regions?
-All regions can be found here: [Microsoft Azure Regions](https://azure.microsoft.com/en-us/regions/)
+All regions can be found here: [Microsoft Azure Regions](https://azure.microsoft.com/en-us/regions/).
 An excerpt of the above regions to use when you create your service principal are:
 
 ```none

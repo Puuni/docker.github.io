@@ -68,6 +68,11 @@ For production systems, see
     }
     ```
 
+    See all storage options for each storage driver:
+
+    - [Stable](/engine/reference/commandline/dockerd.md#storage-driver-options)
+    - [Edge](/edge/engine/reference/commandline/dockerd.md#storage-driver-options)
+
     Docker will not start if the `daemon.json` file contains badly-formed JSON.
 
 3.  Start Docker.
@@ -76,8 +81,8 @@ For production systems, see
     $ sudo systemctl start docker
     ```
 
-4.  Verify that the daemon is using the `devicemapper` storage driver.
-    Use the `docker info` command and look for `Storage Driver`
+4.  Verify that the daemon is using the `devicemapper` storage driver. Use the
+    `docker info` command and look for `Storage Driver`.
 
     ```bash
     $ docker info
@@ -106,16 +111,16 @@ For production systems, see
       Deferred Removal Enabled: false
       Deferred Deletion Enabled: false
       Deferred Deleted Device Count: 0
-      Data loop file: /var/lib/docker/devicemapper/devicemapper/data
-      Metadata loop file: /var/lib/docker/devicemapper/devicemapper/metadata
+      Data loop file: /var/lib/docker/devicemapper/data
+      Metadata loop file: /var/lib/docker/devicemapper/metadata
       Library Version: 1.02.135-RHEL7 (2016-11-16)
     <output truncated>
     ```
 
-  This host is running in `loop-lvm` node, which is **not** supported on
+  This host is running in `loop-lvm` mode, which is **not** supported on
   production systems. This is indicated by the fact that the `Data loop file`
   and a `Metadata loop file` are on files under
-  `/var/lib/docker/devicemapper/devicemapper`. These are loopback-mounted
+  `/var/lib/docker/devicemapper`. These are loopback-mounted
   sparse files. For production systems, see
   [Configure direct-lvm mode for production](#configure-direct-lvm-mode-for-production).
 
@@ -135,7 +140,58 @@ below to configure Docker to use the `devicemapper` storage driver in
 > **Warning**: Changing the storage driver will make any containers you have already
   created inaccessible on the local system. Use `docker save` to save containers,
   and push existing images to Docker Hub or a private repository, so that you
-  not need to re-create them later.
+  don't need to recreate them later.
+
+#### Allow Docker to configure direct-lvm mode
+
+In Docker 17.06 and higher, Docker can manage the block device for you,
+simplifying configuration of `direct-lvm` mode. **This is appropriate for fresh
+Docker set-ups only.** You can only use a single block device. If you need to
+use multiple block devices, [configure direct-lvm mode
+manually](#configure-direct-lvm-mode-manually) instead. The following new
+configuration options have been added:
+
+| Option                          | Description                                                                                                                                                                        | Required? | Default | Example                            |
+|:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------|:--------|:-----------------------------------|
+| `dm.directlvm_device`           | The path to the block device to configure for `direct-lvm`.                                                                                                                        | Yes       |         | `dm.directlvm_device="/dev/xvdf"`  |
+| `dm.thinp_percent`              | The percentage of space to use for storage from the passed in block device.                                                                                                        | No        | 95      | `dm.thinp_percent=95`              |
+| `dm.thinp_metapercent`          | The percentage of space to for metadata storage from the passed=in block device.                                                                                                   | No        | 1       | `dm.thinp_metapercent=1`           |
+| `dm.thinp_autoextend_threshold` | The threshold for when lvm should automatically extend the thin pool as a percentage of the total storage space.                                                                   | No        | 80      | `dm.thinp_autoextend_threshold=80` |
+| `dm.thinp_autoextend_percent`   | The percentage to increase the thin pool by when an autoextend is triggered.                                                                                                       | No        | 20      | `dm.thinp_autoextend_percent=20`   |
+| `dm.directlvm_device_force`     | Whether to format the block device even if a filesystem already exists on it. If set to `false` and a filesystem is present, an error is logged and the filesystem is left intact. | No        | false   | `dm.directlvm_device_force=true`   |
+
+Edit the `daemon.json` file and set the appropriate options, then restart Docker
+for the changes to take effect. The following `daemon.json` sets all of the
+options in the table above.
+
+```json
+{
+  "storage-driver": "devicemapper",
+  "storage-opts": [
+    "dm.directlvm_device=/dev/xdf",
+    "dm.thinp_percent=95",
+    "dm.thinp_metapercent=1",
+    "dm.thinp_autoextend_threshold=80",
+    "dm.thinp_autoextend_percent=20",
+    "dm.directlvm_device_force=false"
+  ]
+}
+```
+
+See all storage options for each storage driver:
+
+- [Stable](/engine/reference/commandline/dockerd.md#storage-driver-options)
+- [Edge](/edge/engine/reference/commandline/dockerd.md#storage-driver-options)
+
+Restart Docker for the changes to take effect. Docker invokes the commands to
+configure the block device for you.
+
+> **Warning**: Changing these values after Docker has prepared the block device
+> for you is not supported and will cause an error.
+
+You still need to [perform periodic maintenance tasks](#manage-devicemapper).
+
+#### Configure direct-lvm mode manually
 
 The procedure below will create a logical volume configured as a thin pool to
 use as backing for the storage pool. It assumes that you have a spare block
@@ -200,63 +256,49 @@ assumes that the Docker daemon is in the `stopped` state.
     ```
 
 7.  Convert the volumes to a thin pool and a storage location for metadata for
-    the thin pool, using the `lgconvert` command.
+    the thin pool, using the `lvconvert` command.
 
     ```none
-      $ sudo lvconvert -y \
-      --zero n \
-      -c 512K \
-      --thinpool docker/thinpool \
-      --poolmetadata docker/thinpoolmeta
+    $ sudo lvconvert -y \
+    --zero n \
+    -c 512K \
+    --thinpool docker/thinpool \
+    --poolmetadata docker/thinpoolmeta
 
-      WARNING: Converting logical volume docker/thinpool and docker/thinpoolmeta to thin pool's data and metadata volumes with metadata wiping.
-      THIS WILL DESTROY CONTENT OF LOGICAL VOLUME (filesystem etc.)
-      Converted docker/thinpool to thin pool.
-      ```
-
-8.  Create an LVM profile that will enable automatic extension of the thin
-    pool. Edit the file `/etc/lvm/profile/docker-thinpool.profile` and add the
-    following contents:
-
-    ```none
-    thin_pool_autoextend_threshold = 80
+    WARNING: Converting logical volume docker/thinpool and docker/thinpoolmeta to
+    thin pool's data and metadata volumes with metadata wiping.
+    THIS WILL DESTROY CONTENT OF LOGICAL VOLUME (filesystem etc.)
+    Converted docker/thinpool to thin pool.
     ```
 
-    If desired, set a different value. The value refers to the percentage of
-    space that needs to be used before LVM attempts to auto-extend the available
-    space. To disable automatic extension entirely, set the value to `100`. This
-    is not recommended.
-
-    Save the file.
-
-7.  Configure autoextension of thin pools via an `lvm` profile.
+8.  Configure autoextension of thin pools via an `lvm` profile.
 
     ```bash
     $ sudo vi /etc/lvm/profile/docker-thinpool.profile
     ```
 
-8.  Specify `thin_pool_autoextend_threshold` and `thin_pool_autoextend_percent`
+9.  Specify `thin_pool_autoextend_threshold` and `thin_pool_autoextend_percent`
     values.
 
     `thin_pool_autoextend_threshold` is the percentage of space used before `lvm`
-    attempts to autoextend the available space (0 = disabled).
+    attempts to autoextend the available space (100 = disabled, not recommended).
 
     `thin_pool_autoextend_percent` is the amount of space to add to the device
-    when automatically extending (100 = disabled).
+    when automatically extending (0 = disabled).
 
     The example below will add 20% more capacity when the disk usage reaches
     80%.
 
-      ```none
-      activation {
-        thin_pool_autoextend_threshold=80
-        thin_pool_autoextend_percent=20
-      }
-      ```
+    ```none
+    activation {
+      thin_pool_autoextend_threshold=80
+      thin_pool_autoextend_percent=20
+    }
+    ```
 
     Save the file.
 
-9.  Apply the LVM profile, using the `lvchange` command.
+10. Apply the LVM profile, using the `lvchange` command.
 
     ```bash
     $ sudo lvchange --metadataprofile docker-thinpool docker/thinpool
@@ -264,17 +306,17 @@ assumes that the Docker daemon is in the `stopped` state.
     Logical volume docker/thinpool changed.
     ```
 
-10. Enable monitoring for logical volumes on your host. Without this step,
+11. Enable monitoring for logical volumes on your host. Without this step,
     automatic extension will not occur even in the presence of the LVM profile.
 
     ```bash
     $ sudo lvs -o+seg_monitor
 
-    LV       VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Monitor  
+    LV       VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert Monitor
     thinpool docker twi-a-t--- 95.00g             0.00   0.01                             monitored
     ```
 
-11. If you have ever run Docker on this host before, or if `/var/lib/docker/`
+12. If you have ever run Docker on this host before, or if `/var/lib/docker/`
     exists, move it out of the way so that Docker can use the new LVM pool to
     store the contents of image and containers.
 
@@ -286,7 +328,7 @@ assumes that the Docker daemon is in the `stopped` state.
     If any of the following steps fail and you need to restore, you can remove
     `/var/lib/docker` and replace it with `/var/lib/docker.bk`.
 
-12. Edit `/etc/docker/daemon.json` and configure the options needed for the
+13. Edit `/etc/docker/daemon.json` and configure the options needed for the
     `devicemapper` storage driver. If the file was previously empty, it should
     now contain the following contents:
 
@@ -301,9 +343,9 @@ assumes that the Docker daemon is in the `stopped` state.
     }
     ```
 
-13. Start Docker.
+14. Start Docker.
 
- 	  **systemd**:
+    **systemd**:
 
     ```bash
     $ sudo systemctl start docker
@@ -315,7 +357,7 @@ assumes that the Docker daemon is in the `stopped` state.
     $ sudo service docker start
     ```
 
-14. Verify that Docker is using the new configuration using `docker info`.
+15. Verify that Docker is using the new configuration using `docker info`.
 
     ```bash
     $ docker info
@@ -351,14 +393,14 @@ assumes that the Docker daemon is in the `stopped` state.
     If Docker is configured correctly, the `Data file` and `Metadata file` will
     be blank, and the pool name will be `docker-thinpool`.
 
-15. After you have verified that the configuration is correct, you can remove the
+16. After you have verified that the configuration is correct, you can remove the
     `/var/lib/docker.bk` directory which contains the previous configuration.
 
     ```bash
     $ rm -rf /var/lib/docker.bk
     ```
 
-## Manage `devicemapper`
+## Manage devicemapper
 
 ### Monitor the thin pool
 
@@ -403,8 +445,7 @@ resize a `loop-lvm` thin pool, avoiding the long process above. This tool is
 not guaranteed to work, but you should only be using `loop-lvm` on non-production
 systems.
 
-If you do not want to use `device_tool`, you can
-[resize the thin pool manually](#use-operating-system-utilities instead.
+If you do not want to use `device_tool`, you can [resize the thin pool manually](#use-operating-system-utilities) instead.
 
 1.  To use the tool, clone the Github repository, change to the
     `contrib/docker-device-tool`, and follow the instructions in the `README.md`
@@ -431,8 +472,8 @@ paths for `Data loop file` and `Metadata loop file`:
 ```bash
 $ docker info |grep 'loop file'
 
- Data loop file: /var/lib/docker/devicemapper/devicemapper/data
- Metadata loop file: /var/lib/docker/devicemapper/devicemapper/metadata
+ Data loop file: /var/lib/docker/devicemapper/data
+ Metadata loop file: /var/lib/docker/devicemapper/metadata
 ```
 
 Follow these steps to increase the size of the thin pool. In this example, the
@@ -441,7 +482,7 @@ thin pool is 100 GB, and is increased to 200 GB.
 1.  List the sizes of the devices.
 
     ```bash
-    $ sudo ls -lh /var/lib/docker/devicemapper/devicemapper/
+    $ sudo ls -lh /var/lib/docker/devicemapper/
 
     total 1175492
     -rw------- 1 root root 100G Mar 30 05:22 data
@@ -453,13 +494,13 @@ thin pool is 100 GB, and is increased to 200 GB.
     decreasing the size is a destructive operation.
 
     ```bash
-    $ sudo truncate -s 200G /var/lib/docker/devicemapper/devicemapper/data
+    $ sudo truncate -s 200G /var/lib/docker/devicemapper/data
     ```
 
 3.  Verify the file size changed.
 
     ```bash
-    $ sudo ls -lh /var/lib/docker/devicemapper/devicemapper/
+    $ sudo ls -lh /var/lib/docker/devicemapper/
 
     total 1.2G
     -rw------- 1 root root 200G Apr 14 08:47 data
@@ -487,19 +528,15 @@ thin pool is 100 GB, and is increased to 200 GB.
     a.  Get the pool name first. The pool name is the first field, delimited by
         ` :`. This command extracts it.
 
-        ```bash
-        $ sudo dmsetup status | grep ' thin-pool ' | awk -F ': ' {'print $1'}
+            $ sudo dmsetup status | grep ' thin-pool ' | awk -F ': ' {'print $1'}
 
-        docker-8:1-123141-pool
-        ```
+            docker-8:1-123141-pool
 
     b.  Dump the device mapper table for the thin pool.
 
-        ```bash
-        $ sudo dmsetup table docker-8:1-123141-pool
+            $ sudo dmsetup table docker-8:1-123141-pool
 
-        0 209715200 thin-pool 7:1 7:0 128 32768 1 skip_block_zeroing
-        ```
+            0 209715200 thin-pool 7:1 7:0 128 32768 1 skip_block_zeroing
 
     c.  Calculate the total sectors of the thin pool using the second field
         of the output. The number is expressed in 512-k sectors. A 100G file has
@@ -509,13 +546,12 @@ thin pool is 100 GB, and is increased to 200 GB.
     d.  Reload the thin pool with the new sector number, using the following
         three `dmsetup`  commands.
 
-        ```bash
-        $ sudo dmsetup suspend docker-8:1-123141-pool
+            $ sudo dmsetup suspend docker-8:1-123141-pool
 
-        $ sudo dmsetup reload docker-8:1-123141-pool --table '0 419430400 thin-pool 7:1 7:0 128 32768 1 skip_block_zeroing'
+            $ sudo dmsetup reload docker-8:1-123141-pool --table '0 419430400 thin-pool 7:1 7:0 128 32768 1 skip_block_zeroing'
 
-        $ sudo dmsetup resume docker-8:1-123141-pool
-        ```
+            $ sudo dmsetup resume docker-8:1-123141-pool
+
 
 #### Resize a direct-lvm thin pool
 
@@ -583,6 +619,16 @@ block device and other parameters to suit your situation.
     <output truncated>
     ```
 
+### Activate the `devicemapper` after reboot
+
+If you reboot the host and find that the docker service failed to start,
+you'll see the error, "Non existing device". You need to re-activate the
+logical volumes with this command:
+
+```bash
+sudo lvchange -ay docker/thinpool
+```
+
 ## How the `devicemapper` storage driver works
 
 > **Warning**: Do not directly manipulate any files or directories within
@@ -598,9 +644,9 @@ NAME                    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 xvda                    202:0    0    8G  0 disk
 └─xvda1                 202:1    0    8G  0 part /
 xvdf                    202:80   0  100G  0 disk
-├─docker-thinpool_tmeta 253:0    0 1020M  0 lvm  
-│ └─docker-thinpool     253:2    0   95G  0 lvm  
-└─docker-thinpool_tdata 253:1    0   95G  0 lvm  
+├─docker-thinpool_tmeta 253:0    0 1020M  0 lvm
+│ └─docker-thinpool     253:2    0   95G  0 lvm
+└─docker-thinpool_tdata 253:1    0   95G  0 lvm
   └─docker-thinpool     253:2    0   95G  0 lvm
 ```
 
@@ -646,7 +692,7 @@ benefits:
   images which are all based on `alpine`, the `alpine` image and all its
   parent images are only stored once each on disk.
 
-- Snapshots are an implenentation of a copy-on-write (CoW) strategy. This means
+- Snapshots are an implementation of a copy-on-write (CoW) strategy. This means
   that a given file or directory is only copied to the container's writable
   layer when it is modified or deleted by that container.
 
@@ -728,7 +774,7 @@ use `loop-lvm`, the blocks may not be freed. This is another reason not to use
 - **`allocate-on demand` performance impact**:
 
   The `devicemapper` storage driver uses an `allocate-on-demand` operation to
-  allocate new blocks from the thin pool into to a container's writable layer.
+  allocate new blocks from the thin pool into a container's writable layer.
   Each block is 64KB, so this is the minimum amount of space that will be used
   for a write.
 

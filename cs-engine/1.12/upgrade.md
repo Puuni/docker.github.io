@@ -180,7 +180,7 @@ Use these instructions to upgrade YUM-based systems.
     $ sudo rpm --import "https://sks-keyservers.net/pks/lookup?op=get&search=0xee6d536cf7dc86e2d7d56f59a178ac6c6238f52e"
     ```
 
-    Note: if the key server above does not respond, you can try one of these:
+    **Note**: If the key server above does not respond, you can try one of these:
        - pgp.mit.edu
        - keyserver.ubuntu.com
 
@@ -229,7 +229,7 @@ Use these instructions to update APT-based systems.
     $ curl -s 'https://sks-keyservers.net/pks/lookup?op=get&search=0xee6d536cf7dc86e2d7d56f59a178ac6c6238f52e' | sudo apt-key add --import
     ```
 
-    Note: if the key server above does not respond, you can try one of these:
+    **Note**: If the key server above does not respond, you can try one of these:
        - pgp.mit.edu
        - keyserver.ubuntu.com
 
@@ -239,7 +239,7 @@ Use these instructions to update APT-based systems.
     $ sudo apt-get update && sudo apt-get install apt-transport-https
     ```
 
-4.  Install additional virtual drivers not in the base image.
+4.  Install additional virtual drivers not in the parent image.
 
     ```bash
     $ sudo apt-get install -y linux-image-extra-virtual

@@ -1,13 +1,13 @@
 ---
 advisory: experimental
 description: Description of Docker and Compose's experimental support for application bundles
-keywords: documentation, docs,  docker, compose, bundles, stacks
+keywords: documentation, docs, docker, compose, bundles, stacks
 title: Docker stacks and distributed application bundles (experimental)
 ---
 
 > **Note**: This is a modified copy of the [Docker Stacks and Distributed Application
 > Bundles](https://github.com/moby/moby/blob/v1.12.0-rc4/experimental/docker-stacks-and-bundles.md)
-> document in the [docker/docker repo](https://github.com/moby/moby). It's been updated to accurately reflect newer releases.
+> document in the [docker/docker-ce repo](https://github.com/docker/docker-ce). It's been updated to accurately reflect newer releases.
 
 ## Overview
 
@@ -32,7 +32,7 @@ walkthrough](/get-started/). This shows you how to define
 a service configuration in a Compose file, deploy the app, and use
 the relevant tools and commands.
 
-## Producing a bundle
+## Produce a bundle
 
 The easiest way to produce a bundle is to generate it using `docker-compose`
 from an existing `docker-compose.yml`. Of course, that's just *one* possible way
@@ -50,7 +50,7 @@ WARNING: Unsupported key 'volumes' in services.nsqd - ignoring
 Wrote bundle to vossibility-stack.dab
 ```
 
-## Creating a stack from a bundle
+## Create a stack from a bundle
 
 > **Note**: Because support for stacks and bundles is in the experimental stage,
 > you need to install an experimental build of Docker Engine to use it.
@@ -59,7 +59,7 @@ Wrote bundle to vossibility-stack.dab
 > [Docker for Mac](/docker-for-mac/) or
 > [Docker for Windows](/docker-for-windows/) to install
 > it. If you're on Linux, follow the instructions in the
-> [experimental build README](https://github.com/moby/moby/blob/master/experimental/README.md).
+> [experimental build README](https://github.com/docker/cli/blob/master/experimental/README.md).
 
 A stack is created using the `docker deploy` command:
 
@@ -103,7 +103,7 @@ COMMAND
 axqh55ipl40h  vossibility-stack_vossibility-collector  1 icecrime/vossibility-collector@sha256:f03f2977203ba6253988c18d04061c5ec7aab46bca9dfd89a9a1fa4500989fba --config /config/config.toml --debug
 ```
 
-## Managing stacks
+## Manage stacks
 
 Stacks are managed using the `docker stack` command:
 

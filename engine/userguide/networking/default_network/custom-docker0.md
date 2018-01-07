@@ -18,7 +18,7 @@ connected to the bridge and all traffic coming from and going to the container
 flows over the bridge to the Docker daemon, which handles routing on behalf of
 the container.
 
-Docker configures `docker0` with an IP address, netmask and IP allocation range.
+Docker configures `docker0` with an IP address, netmask, and IP allocation range.
 Containers which are connected to the default bridge are allocated IP addresses
 within this range. Certain default settings apply to the default bridge unless
 you specify otherwise. For instance, the default maximum transmission unit (MTU),
@@ -34,9 +34,9 @@ following settings to configure the default bridge network:
 ```json
 {
   "bip": "192.168.1.5/24",
-  "fixed-cidr": "10.20.0.0/16",
+  "fixed-cidr": "192.168.1.5/25",
   "fixed-cidr-v6": "2001:db8::/64",
-  "mtu": "1500",
+  "mtu": 1500,
   "default-gateway": "10.20.1.1",
   "default-gateway-v6": "2001:db8:abcd::89",
   "dns": ["10.20.1.2","10.20.1.3"]
@@ -53,11 +53,11 @@ each:
 
 - `--fixed-cidr=CIDR` and `--fixed-cidr-v6=CIDRv6`: restrict the IP range from
   the `docker0` subnet, using standard CIDR notation. For example:
-  `172.16.1.0/28`. This range must be an IPv4 range for fixed IPs, such as
-  `10.20.0.0/16`, and must be a subset of the bridge IP range (`docker0` or set
-  using `--bridge`). For example, with `--fixed-cidr=192.168.1.0/25`, IPs for
-  your containers will be chosen from the first half of addresses included in
-  the `192.168.1.0/24` subnet.
+  `172.16.1.0/28`. This range must be an IPv4 range for fixed IPs, and must
+  be a subset of the bridge IP range (`docker0` or set
+  using `--bridge` or the `bip` key in the `daemon.json` file). For example,
+  with `--fixed-cidr=192.168.1.0/25`, IPs for your containers will be chosen from
+  the first half of addresses included in the 192.168.1.0/24 subnet.
 
 - `--mtu=BYTES`: override the maximum packet length on `docker0`.
 
@@ -73,7 +73,7 @@ each:
 Once you have one or more containers up and running, you can confirm that Docker
 has properly connected them to the `docker0` bridge by running the `brctl`
 command on the host machine and looking at the `interfaces` column of the
-output.  This example shows a `docker0` bridge with two containers connected:
+output. This example shows a `docker0` bridge with two containers connected:
 
 ```bash
 $ sudo brctl show
@@ -87,9 +87,9 @@ If the `brctl` command is not installed on your Docker host, then on Ubuntu you
 should be able to run `sudo apt-get install bridge-utils` to install it.
 
 Finally, the `docker0` Ethernet bridge settings are used every time you create a
-new container.  Docker selects a free IP address from the range available on the
+new container. Docker selects a free IP address from the range available on the
 bridge each time you `docker run` a new container, and configures the
-container's `eth0` interface with that IP address and the bridge's netmask.  The
+container's `eth0` interface with that IP address and the bridge's netmask. The
 Docker host's own IP address on the bridge is used as the default gateway by
 which each container reaches the rest of the Internet.
 

@@ -14,13 +14,21 @@ You can install UCP on-premises or on a cloud provider. To install UCP,
 all nodes must have:
 
 * Linux kernel version 3.10 or higher
-* CS Docker Engine version 1.13.0 or higher
-* 4.00 GB of RAM
+* CS Docker Engine 1.13, or EE Daemon 17.03 and higher
+* 8.00 GB of RAM for manager nodes or nodes running DTR
+* 4.00 GB of RAM for worker nodes
 * 3.00 GB of available disk space
 * A static IP address
 
 For highly-available installations, you also need a way to transfer files
 between hosts.
+
+> Workloads on manager nodes
+>
+> These requirements assume that manager nodes won't run regular workloads.
+> If you plan to run additional workloads on manager nodes, you may need to
+> provision more powerful nodes. If manager nodes become overloaded, the
+> swarm may experience issues.
 
 ## Network requirements
 
@@ -31,7 +39,7 @@ When installing UCP on a host, make sure the following ports are open:
 | managers, workers |    in     | TCP 443  (configurable) | Port for the UCP web UI and API                                                   |
 | managers          |    in     | TCP 2376 (configurable) | Port for the Docker Swarm manager. Used for backwards compatibility               |
 | managers, workers |    in     | TCP 2377 (configurable) | Port for communication between swarm nodes                                        |
-| managers, workers |  in, out  | UDP 4789                | Port for overlay networking                                                       |
+| managers, workers |  in, out  | TCP, UDP 4789           | Port for overlay networking                                                       |
 | managers, workers |  in, out  | TCP, UDP 7946           | Port for gossip-based clustering                                                  |
 | managers, workers |    in     | TCP 12376               | Port for a TLS proxy that provides access to UCP, Docker Engine, and Docker Swarm |
 | managers          |    in     | TCP 12379               | Port for internal node configuration, cluster configuration, and HA               |
@@ -44,14 +52,14 @@ When installing UCP on a host, make sure the following ports are open:
 | managers          |    in     | TCP 12386               | Port for the authentication worker                                                |
 | managers          |    in     | TCP 12387               | Port for the metrics service                                                      |
 
-Also, make sure the networks you're using allow the UCP components to
-communicate before they timing out.
+Also, make sure the networks you're using allow the UCP components enough time to
+communicate before they time out.
 
 | Component                              | Timeout (ms) | Configurable |
 |:---------------------------------------|:-------------|:-------------|
 | Raft consensus between manager nodes   | 3000         | no           |
 | Gossip protocol for overlay networking | 5000         | no           |
-| etcd                                   | 5000         | yes          |
+| etcd                                   | 500          | yes          |
 | rethinkDB                              | 10000        | no           |
 | Stand-alone swarm                      | 90000        | no           |
 

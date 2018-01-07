@@ -1,6 +1,6 @@
 ---
 description: Change log / release notes per release
-keywords: pinata, alpha, tutorial
+keywords: Docker for Mac, edge, stable, release notes
 redirect_from:
 - /mackit/release-notes/
 title: Docker for Mac release notes
@@ -19,18 +19,153 @@ about both kinds of releases, and download stable and edge product installers at
 
 ## Stable Release Notes
 
-### Docker Community Edition 17.03.0-ce-mac2, 2017-03-06 (stable)
+### Docker Community Edition 17.09.1-ce-mac42 2017-12-11 (Stable)
 
-**Hotfixes**
+* Upgrades
+  - [Docker 17.09.1-ce](https://github.com/docker/docker-ce/releases/tag/v17.09.1-ce)
+  - [Docker compose 1.17.1](https://github.com/docker/compose/releases/tag/1.17.1)
+  - [Docker Machine 0.13.0](https://github.com/docker/machine/releases/tag/v0.13.0)  
 
-- Set the ethernet MTU to 1500 to prevent a hyperkit crash
-- Fix docker build on private images
+* Bug fixes and minor changes
+  - Fix bug not allowing to move qcow disk in some cases.
+
+### Docker Community Edition 17.09.0-ce-mac35 2017-10-06 (Stable)
+
+[Download](https://download.docker.com/mac/stable/19661/Docker.dmg)
+
+* Bug fix
+  - Fix Docker For Mac unable to start in some cases : removed use of libgmp sometimes causing the vpnkit process to die.
+
+### Docker Community Edition 17.09.0-ce-mac33 2017-10-03 (Stable)
+
+[Download](https://download.docker.com/mac/stable/19543/Docker.dmg)
+
+* Bug fix
+  - Do not show Toolbox migration assistant when there are existing Docker For Mac data.
+
+### Docker Community Edition 17.09.0-ce-mac32 2017-10-02 (Stable)
+
+[Download](https://download.docker.com/mac/stable/19506/Docker.dmg)
+
+* Upgrades
+  - [Docker 17.09.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.09.0-ce)
+  - [Docker Compose 1.16.1](https://github.com/docker/compose/releases/tag/1.16.1)
+  - [Docker Machine 0.12.2](https://github.com/docker/machine/releases/tag/v0.12.2)  
+  - [Docker Credential Helpers 0.6.0](https://github.com/docker/docker-credential-helpers/releases/tag/v0.6.0)
+  - Linux Kernel 4.9.49
+  - AUFS 20170911
+  - DataKit update (fix instability on High Sierra)
+
+* New
+  - Add daemon options validation
+  - VPNKit: add support for ping!
+  - VPNKit: add slirp/port-max-idle-timeout to allow the timeout to be adjusted or even disabled
+  - VPNKit: bridge mode is default everywhere now
+  - Transparent proxy using macOS system proxies (if defined) directly
+  - GUI settings are now stored in ~/Library/Group\ Containers/group.com.docker/settings.json. daemon.json in now a file in ~/.docker/
+  - You can now change the default IP address used by Hyperkit if it collides with your network
+
+* Bug fixes and minor changes
+  - Fix instability on High Sierra (docker/for-mac#2069, docker/for-mac#2062, docker/for-mac#2052, docker/for-mac#2029, docker/for-mac#2024)
+  - Fix password encoding/decoding (docker/for-mac#2008, docker/for-mac#2016, docker/for-mac#1919, docker/for-mac#712, docker/for-mac#1220).
+  - Kernel: Enable TASK_XACCT and TASK_IO_ACCOUNTING (docker/for-mac#1608)
+  - Rotate logs in the VM more often  
+  - VPNKit: change protocol to support error messages reported back from the server
+  - VPNKit: fix a bug which causes a socket to leak if the corresponding TCP connection is idle
+    for more than 5 minutes (related to [docker/for-mac#1374](https://github.com/docker/for-mac/issues/1374))
+  - VPNKit: improve the logging around the Unix domain socket connections
+  - VPNKit: automatically trim whitespace from int or bool database keys
+  - Diagnose can be cancelled & Improved help information. Fixes docker/for-mac#1134, docker/for-mac#1474
+  - Support paging of docker-cloud repositories & orgs. Fixes docker/for-mac#1538
+
+### Docker Community Edition 17.06.2-ce-mac27 2017-09-06 (Stable)
+
+[Download](https://download.docker.com/mac/stable/19124/Docker.dmg)
+
+* Upgrades
+  - [Docker 17.06.2-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.2-ce)
+  - [Docker Machine 0.12.2](https://github.com/docker/machine/releases/tag/v0.12.2)
+
+### Docker Community Edition 17.06.1-ce-mac24, 2017-08-21 (stable)
+
+[Download](https://download.docker.com/mac/stable/18950/Docker.dmg)
+
+**Upgrades**
+- [Docker 17.06.1-ce-rc1](https://github.com/docker/docker-ce/releases/tag/v17.06.1-ce-rc1)
+- Linux Kernel 4.9.36
+- AUFS 20170703
+
+**Bug fixes and minor changes**
+
+- DNS Fixes. Fixes [docker/for-mac#1763](https://github.com/docker/for-mac/issues/176), [docker/for-mac#1811](https://github.com/docker/for-mac/issues/1811), [docker/for-mac#1803](https://github.com/docker/for-mac/issues/1803)
+
+- Avoid unnecessary VM reboot (when changing proxy exclude, but no proxy set). Fixes [docker/for-mac#1809](https://github.com/docker/for-mac/issues/1809), [docker/for-mac#1801](https://github.com/docker/for-mac/issues/1801)
+
+### Docker Community Edition 17.06.0-ce-mac18, 2017-06-28 (stable)
+
+[Download](https://download.docker.com/mac/stable/18433/Docker.dmg)
+
+**Upgrades**
+
+- [Docker 17.06.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce)
+- [Docker Credential Helpers 0.5.2](https://github.com/docker/docker-credential-helpers/releases/tag/v0.5.2)
+- [Docker Machine 0.12.0](https://github.com/docker/machine/releases/tag/v0.12.0)
+- [Docker compose 1.14.0](https://github.com/docker/compose/releases/tag/1.14.0)
+- qcow-tool v0.10.0 (improve the performance of `compact`: mirage/ocaml-qcow#94)
+- OSX Yosemite 10.10 is marked as deprecated
+- Linux Kernel 4.9.31
+
+**New**
+
+- Integration with Docker Cloud: control remote Swarms from the local CLI and view your repositories.
+- GUI Option to opt out of credential store
+- GUI option to reset Docker data without losing all settings (fixes [docker/for-mac#1309](https://github.com/docker/for-mac/issues/1309))
+- Add an experimental DNS name for the host: `docker.for.mac.localhost`
+- Support for client (i.e. "login") certificates for authenticating registry access (fixes [docker/for-mac#1320](https://github.com/docker/for-mac/issues/1320))
+- OSXFS: support for `cached` mount flag to improve performance of macOS mounts when strict consistency is not necessary
+
+**Bug fixes and minor changes**
+
+- Resync HTTP(S) proxy settings on application start
+- Interpret system proxy setting of `localhost` correctly (see [docker/for-mac#1511](https://github.com/docker/for-mac/issues/1511))
+- All Docker binaries bundled with Docker for Mac are now signed
+- Display all Docker Cloud organizations and repositories in the whale menu (fixes [docker/for-mac#1538 ](https://github.com/docker/for-mac/issues/1538))
+- OSXFS: improved latency for many common operations (e.g. read and write) by approximately 25%
+- Fixed GUI crash when text table view was selected and windows re-opened (fixes [docker/for-mac#1477](https://github.com/docker/for-mac/issues/1477))
+- Reset to default / uninstall also remove `config.json` and `osxkeychain` credentials
+- More detailed VirtualBox uninstall requirements ( [docker/for-mac#1343](https://github.com/docker/for-mac/issues/1343))
+- Request time sync after waking up to improve [docker/for-mac#17](https://github.com/docker/for-mac/issues/17)
+- VPNKit: Improved DNS timeout handling (fixes [docker/for-mac#202](https://github.com/docker/vpnkit/issues/202))
+- VPNKit: Use DNSServiceRef API by default (only enabled for new installs or after factory reset)
+- Add a reset to factory defaults button when application crashes
+- Toolbox import dialog now defaults to "Skip"
+- Buffered data should be treated correctly when Docker client requests are upgraded to raw streams
+- Removed an error message from the output related to experimental features handling
+- `vmnetd` should not crash when user home directory is on an external drive
+- Improved settings database schema handling
+- Disk trimming should work as expected
+- Diagnostics now contains more settings data
+
+### Docker Community Edition 17.03.1-ce-mac12, 2017-05-12 (stable)
+
+[Download](https://download.docker.com/mac/stable/17661/Docker.dmg)
+
+**Upgrades**
+
+- Security fix for CVE-2017-7308
+
+### Docker Community Edition 17.03.1-ce-mac5, 2017-03-29 (stable)
+
+[Download](https://download.docker.com/mac/stable/16048/Docker.dmg)
 
 **Upgrades**
 
 - [Docker Credential Helpers 0.4.2](https://github.com/docker/docker-credential-helpers/releases/tag/v0.4.2)
 
+
 ### Docker Community Edition 17.03.0-ce-mac1, 2017-03-02 (stable)
+
+[Download](https://download.docker.com/mac/stable/15583/Docker.dmg)
 
 **New**
 
@@ -74,6 +209,8 @@ about both kinds of releases, and download stable and edge product installers at
 
 ### Docker for Mac 1.13.1, 2017-02-09 (stable)
 
+[Download](https://download.docker.com/mac/stable/15353/Docker.dmg)
+
 **Upgrades**
 
 - [Docker 1.13.1](https://github.com/docker/docker/releases/tag/v1.13.1)
@@ -88,6 +225,8 @@ about both kinds of releases, and download stable and edge product installers at
 - Allow to reset faulty `daemon.json` through a link in advanced subpanel
 
 ### Docker for Mac 1.13.0, 2017-01-19 (stable)
+
+[Download](https://download.docker.com/mac/stable/15072/Docker.dmg)
 
 **Upgrades**
 
@@ -139,6 +278,8 @@ underestimate the number of active connections
 
 ### Docker for Mac 1.12.5, 2016-12-20 (stable)
 
+[Download](https://download.docker.com/mac/stable/14777/Docker.dmg)
+
 **Upgrades**
 
 - Docker 1.12.5
@@ -149,6 +290,8 @@ underestimate the number of active connections
 We did not distribute a 1.12.4 stable release
 
 ### Docker for Mac 1.12.3, 2016-11-09 (stable)
+
+[Download](https://download.docker.com/mac/stable/13776/Docker.dmg)
 
 **Upgrades**
 
@@ -201,9 +344,9 @@ We did not distribute a 1.12.4 stable release
 **File sharing**
 
 - osxfs: Fixed the prohibition of chown on read-only or mode 0 files, (fixes
-  [https://github.com/docker/for-mac/issues/117](https://github.com/docker/for-mac/issues/117),
-  [https://github.com/docker/for-mac/issues/263](https://github.com/docker/for-mac/issues/263),
-  [https://github.com/docker/for-mac/issues/633](https://github.com/docker/for-mac/issues/633))
+  [docker/for-mac#117](https://github.com/docker/for-mac/issues/117),
+  [docker/for-mac#263](https://github.com/docker/for-mac/issues/263),
+  [docker/for-mac#633](https://github.com/docker/for-mac/issues/633))
 
 - osxfs: Fixed race causing some reads to run forever
 
@@ -211,9 +354,11 @@ We did not distribute a 1.12.4 stable release
 
 **Moby**
 
-- Increase default ulimit for memlock (fixes [https://github.com/docker/for-mac/issues/801](https://github.com/docker/for-mac/issues/801))
+- Increase default ulimit for memlock (fixes [docker/for-mac#801](https://github.com/docker/for-mac/issues/801))
 
 ### Docker for Mac 1.12.1, 2016-09-16 (stable)
+
+[Download](https://download.docker.com/mac/stable/1.12.1.12133/Docker.dmg)
 
 **New**
 
@@ -231,12 +376,12 @@ We did not distribute a 1.12.4 stable release
 **General**
 
  * Fixed communications glitch when UI talks to com.docker.vmnetd
- Fixes [https://github.com/docker/for-mac/issues/90](https://github.com/docker/for-mac/issues/90)
+ Fixes [docker/for-mac#90](https://github.com/docker/for-mac/issues/90)
 
  * `docker-diagnose`: display and record the time the diagnosis was captured
 
  * Don't compute the container folder in `com.docker.vmnetd`
-   Fixes [https://github.com/docker/for-mac/issues/47](https://github.com/docker/for-mac/issues/47)
+   Fixes [docker/for-mac#47](https://github.com/docker/for-mac/issues/47)
 
  * Warn the user if BlueStacks is installed (potential kernel panic)
 
@@ -258,7 +403,7 @@ We did not distribute a 1.12.4 stable release
 
 * Allow ports to be bound on host addresses other than `0.0.0.0` and `127.0.0.1`
   Fixes issue reported in
-  [https://github.com/docker/for-mac/issues/68](https://github.com/docker/for-mac/issues/68)
+  [docker/for-mac#68](https://github.com/docker/for-mac/issues/68)
 
 * Use Mac System Configuration database to detect DNS
 
@@ -293,6 +438,8 @@ We did not distribute a 1.12.4 stable release
 
 ### Docker for Mac 2016-08-11 1.12.0-a (stable)
 
+[Download](https://download.docker.com/mac/stable/11213/Docker.dmg)
+
 This bug fix release contains osxfs improvements. The fixed issues may have
 been seen as failures with apt-get and npm in containers, missed inotify
 events or unexpected unmounts.
@@ -307,23 +454,10 @@ events or unexpected unmounts.
 
 * osxfs: fixed an issue causing volumes mounted under other mounts to spontaneously unmount
 
-### Docker for Mac 1.12.0-a, 2016-08-03 (stable)
-
-This bug fix release contains osxfs improvements. The fixed issues may have
-been seen as failures with apt-get and npm in containers, missed `inotify`
-events or unexpected unmounts.
-
-**Hotfixes**
-
-* osxfs: fixed an issue causing access to children of renamed directories to fail (symptoms: npm failures, apt-get failures) (docker/for-mac)
-
-* osxfs: fixed an issue causing some ATTRIB and CREATE `inotify` events to fail delivery and other `inotify` events to stop
-
-* osxfs: fixed an issue causing all `inotify` events to stop when an ancestor directory of a mounted directory was mounted
-
-* osxfs: fixed an issue causing volumes mounted under other mounts to spontaneously unmount
 
 ### Docker for Mac 1.12.0, 2016-07-28 (stable)
+
+[Download](https://download.docker.com/mac/stable/10871/Docker.dmg)
 
 * First stable release
 
@@ -335,11 +469,278 @@ events or unexpected unmounts.
 
 ## Edge Release Notes
 
+### Docker Community Edition 17.12.0-ce-mac45 2018-01-05 (Edge)
+
+* Upgrades
+  - [Docker 17.12.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.12.0-ce)
+
+* New
+  - Experimental Kubernetes Support. You can now run a single-node Kubernetes cluster from the "Kubernetes" Pane in Docker For Mac Preferences and use kubectl commands as well as docker commands. See https://docs.docker.com/docker-for-mac/kubernetes/
+  - DNS name `docker.for.mac.host.internal` shoud be used instead of `docker.for.mac.localhost` (still valid) for host resolution from containers, since since there is an RFC banning the use of subdomains of localhost (See https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-06).
+
+* Bug fixes and minor changes
+  - The docker engine is configured to use VPNKit as an HTTP proxy, fixing 'docker pull' in environments with no DNS. Fixes [docker/for-mac#2320](https://github.com/docker/for-mac/issues/2320)
+
+### Docker Community Edition 17.12.0-ce-rc4-mac44 2017-12-21 (Edge)
+
+* Upgrades
+  - [Docker 17.12.0-ce-rc4](https://github.com/docker/docker-ce/releases/tag/v17.12.0-ce-rc4)
+  - [Docker compose 1.18.0](https://github.com/docker/compose/releases/tag/1.18.0)
+
+* Bug fixes and minor changes
+  - Display actual size used by the VM disk, especially useful for disks using raw format. See [docker/for-mac#2297](https://github.com/docker/for-mac/issues/2297).
+  - Fix more specific edge cases in filesharing settings migration. 
+
+### Docker Community Edition 17.12.0-ce-rc3-mac43 2017-12-15 (Edge)
+
+* Upgrades
+  - [Docker 17.12.0-ce-rc3](https://github.com/docker/docker-ce/releases/tag/v17.12.0-ce-rc3)
+
+* Bug fixes and minor changes
+  - Fix filesharing migration issue ([docker/for-mac#2317](https://github.com/docker/for-mac/issues/2317))
+
+### Docker Community Edition 17.12.0-ce-rc2-mac41 2017-12-13 (Edge)
+
+* Upgrades
+  - [Docker 17.12.0-ce-rc2](https://github.com/docker/docker-ce/releases/tag/v17.12.0-ce-rc2)
+  - [Docker compose 1.18.0-rc2](https://github.com/docker/compose/releases/tag/1.18.0-rc2)
+
+* New
+  - VM disk size can be changed in settings. (See [docker/for-mac#1037](https://github.com/docker/for-mac/issues/1037)).
+
+* Bug fixes and minor changes
+  - Avoid VM reboot when changing host proxy settings. 
+  - Don't break HTTP traffic between containers by forwarding them via the external proxy [docker/for-mac#981](https://github.com/docker/for-mac/issues/981)
+  - Filesharing settings are now stored in settings.json
+  - Daemon restart button has been moved to settings / Reset Tab
+  - Display various component versions in About box
+  - Better VM state handling & error messsages in case of VM crashes
+
+### Docker Community Edition 17.11.0-ce-mac40 2017-11-22 (Edge)
+
+* Upgrades
+  - [Docker 17.11.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.11.0-ce)
+
+### Docker Community Edition 17.11.0-ce-rc4-mac39 2017-11-17 (Edge)
+
+* Upgrades
+  - [Docker 17.11.0-ce-rc4](https://github.com/docker/docker-ce/releases/tag/v17.11.0-ce-rc4)
+  - [Docker compose 1.17.1](https://github.com/docker/compose/releases/tag/1.17.1)
+  - Linux Kernel 4.9.60
+
+* Bug fixes and minor changes
+  - Fix login into private repository with certificate issue. [https://github.com/docker/for-mac/issues/2201](docker/for-mac#2201)
+
+* New
+  - For systems running APFS on SSD on High Sierra, use `raw` format VM disks by default. This increases disk throughput (from 320MiB/sec to 600MiB/sec in `dd` on a 2015 MacBook Pro) and disk space handling.  
+  Existing disks are kept in qcow format, if you want to switch to raw format you need to "Reset to factory defaults". To query the space usage of the file, use a command like:  
+  `$ cd ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/`  
+  `$ ls -ls Docker.raw`  
+  `3944768 -rw-r--r--@ 1 user  staff  68719476736 Nov 16 11:19 Docker.raw`  
+  The first number (`3944768`) is the allocated space in blocks; the larger number `68719476736` is the maximum total amount of space the file may consume in future in bytes.
+
+### Docker Community Edition 17.11.0-ce-rc3-mac38 2017-11-09 (Edge)
+
+* Upgrades
+  - [Docker 17.11.0-ce-rc3](https://github.com/docker/docker-ce/releases/tag/v17.11.0-ce-rc3)
+
+* Bug fixes and minor changes
+  - Fix docker build exits successfully but fails to build image [moby/#35413](https://github.com/moby/moby/issues/35413).
+
+### Docker Community Edition 17.11.0-ce-rc2-mac37 2017-11-02 (Edge)
+
+* Upgrades
+  - [Docker 17.11.0-ce-rc2](https://github.com/docker/docker-ce/releases/tag/v17.11.0-ce-rc2)
+  - [Docker compose 1.17.0](https://github.com/docker/compose/releases/tag/1.17.0)
+  - Linuxkit blueprint updated to [linuxkit/linuxkit#2633](https://github.com/linuxkit/linuxkit/pull/2633), fixes CVE-2017-15650
+
+* Bug fixes and minor changes
+  - Fix centos:5 & centos:6 images not starting properly with LinuxKit VM (fixes [docker/for-mac#2169](https://github.com/docker/for-mac/issues/2169)).
+
+
+### Docker Community Edition 17.10.0-ce-mac36 2017-10-24 (Edge)
+
+* Upgrades
+  - [Docker 17.10.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.10.0-ce)
+  - [Docker Machine 0.13.0](https://github.com/docker/machine/releases/tag/v0.13.0)
+  - [Docker compose 1.17.0-rc1](https://github.com/docker/compose/releases/tag/1.17.0-rc1)
+
+* New
+  - VM entirely built with Linuxkit
+
+### Docker Community Edition 17.09.0-ce-mac34 2017-10-06 (Edge)
+
+* Bug fixes and minor changes
+  - Fix Docker For Mac unable to start in some cases : removed use of libgmp sometimes causing the vpnkit process to die.
+
+### Docker Community Edition 17.09.0-ce-mac31 2017-09-29 (Edge)
+
+* Upgrades
+  - [Docker 17.09.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.09.0-ce)
+  - DataKit update (fix instability on High Sierra)
+
+* Bug fixes and minor changes
+  - Fix password encoding/decoding. May require to re-login to docker cloud after this version is installed. (Fixes:docker/for-mac#2008, docker/for-mac#2016, docker/for-mac#1919, docker/for-mac#712, docker/for-mac#1220).
+
+### Docker Community Edition 17.09.0-ce-rc3-mac30 2017-09-22 (Edge)
+
+* Upgrades
+  - [Docker 17.09.0-ce-rc3](https://github.com/docker/docker-ce/releases/tag/v17.09.0-ce-rc3)
+
+### Docker Community Edition 17.09.0-ce-rc2-mac29 2017-09-19 (Edge)
+
+* Upgrades
+  - [Docker 17.09.0-ce-rc2](https://github.com/docker/docker-ce/releases/tag/v17.09.0-ce-rc2)
+  - Linux Kernel 4.9.49
+  - AUFS 20170911
+
+* Bug fixes and minor changes
+  - Kernel: Enable TASK_XACCT and TASK_IO_ACCOUNTING (docker/for-mac#1608)
+  - Rotate logs in the VM more often  
+
+### Docker Community Edition 17.09.0-ce-rc1-mac28 2017-09-07 (Edge)
+
+* Upgrades
+  - [Docker 17.09.0-ce-rc1](https://github.com/docker/docker-ce/releases/tag/v17.09.0-ce-rc1)
+  - [Docker compose 1.16.1](https://github.com/docker/compose/releases/tag/1.16.1)
+  - Linux Kernel 4.9.46
+
+* Bug fixes and minor changes
+  - VPNKit: change protocol to support error messages reported back from the server
+
+### Docker Community Edition 17.07.0-ce-mac26, 2017-09-01 (edge)
+
+* Upgrades
+  - [Docker 17.07.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.07.0-ce)
+  - [Docker compose 1.16.0](https://github.com/docker/compose/releases/tag/1.16.0)
+  - [Docker Credential Helpers 0.6.0](https://github.com/docker/docker-credential-helpers/releases/tag/v0.6.0)
+
+### Docker Community Edition 17.07.0-ce-rc4-mac25, 2017-08-24 (edge)
+
+**Upgrades**
+
+- [Docker 17.07.0-ce-rc4](https://github.com/docker/docker-ce/releases/tag/v17.07.0-ce-rc4)
+- [Docker compose 1.16.0-rc1](https://github.com/docker/compose/releases/tag/1.16.0-rc1)
+
+**Bug fixes and minor changes**
+
+- Fixed string validation in daemon options (related to [docker/for-mac#1971](https://github.com/docker/for-mac/issues/1971))
+- VPNKit: Fixed a bug which causes a socket to leak if the corresponding
+TCP connection is idle for more than 5 minutes (related to
+[docker/for-mac#1374](https://github.com/docker/for-mac/issues/1374))
+
+### Docker Community Edition 17.07.0-ce-rc3-mac23, 2017-08-21 (edge)
+
+**Upgrades**
+
+- [Docker 17.07.0-ce-rc3](https://github.com/docker/docker-ce/releases/tag/v17.07.0-ce-rc3)
+
+**New**
+
+- VPNKit: Added support for ping!
+- VPNKit: Added `slirp/port-max-idle-timeout` to allow the timeout to be adjusted or even disabled
+- VPNKit: Bridge mode is default everywhere now
+
+**Bug fixes and minor changes**
+
+- VPNKit: Improved the logging around the Unix domain socket connections
+- VPNKit: Automatically trim whitespace from `int` or `bool` database keys
+
+### Docker Community Edition 17.07.0-ce-rc2-mac22, 2017-08-11 (edge)
+
+**Upgrades**
+
+- [Docker 17.07.0-ce-rc2](https://github.com/docker/docker-ce/releases/tag/v17.07.0-ce-rc2)
+- Linux Kernel 4.9.41
+
+### Docker Community Edition 17.07.0-ce-rc1-mac21, 2017-07-31 (edge)
+
+**Upgrades**
+
+- [Docker 17.07.0-ce-rc1](https://github.com/docker/docker-ce/releases/tag/v17.07.0-ce-rc1)
+- [Docker compose 1.15.0](https://github.com/docker/compose/releases/tag/1.15.0)
+- [Docker Machine 0.12.2](https://github.com/docker/machine/releases/tag/v0.12.2)  
+- Linux Kernel 4.9.38
+
+**New**
+
+- Transparent proxy using macOS system proxies (if defined) directly
+- GUI settings are now stored in `~/Library/Group\ Containers/group.com.docker/settings.json`. `daemon.json` in now a file in `~/.docker/`
+- You can now change the default IP address used by Hyperkit if it collides with your network
+
+**Bug fixes and minor changes**
+
+- Add daemon options validation
+- Diagnose can be cancelled & Improved help information. Fixes [docker/for-mac#1134](https://github.com/docker/for-mac/issues/1134), [docker/for-mac#1474](https://github.com/docker/for-mac/issues/1474)
+- Support paging of Docker Cloud [repositories](/docker-cloud/builds/repos.md) and [organizations](/docker-cloud/orgs.md). Fixes [docker/for-mac#1538](https://github.com/docker/for-mac/issues/1538)
+
+### Docker Community Edition 17.06.1-ce-mac20, 2017-07-18 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.1-ce-rc1](https://github.com/docker/docker-ce/releases/tag/v17.06.1-ce-rc1)
+- Linux Kernel 4.9.36
+- AUFS 20170703
+
+### Docker Community Edition 17.06.0-ce-mac17, 2017-06-28 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.0-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce)
+
+### Docker Community Edition 17.06.0-rc5-ce-mac16, 2017-06-21 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.0-ce-rc5](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce-rc5)
+- [Docker compose 1.14.0](https://github.com/docker/compose/releases/tag/1.14.0)
+
+### Docker Community Edition 17.06.0-rc4-ce-mac15, 2017-06-16 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.0-rc4-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce-rc4)
+- [Docker Credential Helpers 0.5.2](https://github.com/docker/docker-credential-helpers/releases/tag/v0.5.2)
+- Linux Kernel 4.9.31
+
+### Docker Community Edition 17.06.0-rc2-ce-mac14, 2017-06-08 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.0-rc2-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce-rc2)
+- [Docker Machine 0.12.0](https://github.com/docker/machine/releases/tag/v0.12.0)
+- [Docker compose 1.14.0-rc2](https://github.com/docker/compose/releases/tag/1.14.0-rc2)
+
+### Docker Community Edition 17.06.0-rc1-ce-mac13, 2017-06-01 (edge)
+
+**Upgrades**
+
+- [Docker 17.06.0-rc1-ce](https://github.com/docker/docker-ce/releases/tag/v17.06.0-ce-rc1)
+- [Docker Credential Helpers 0.5.1](https://github.com/docker/docker-credential-helpers/releases/tag/v0.5.1)
+- `qcow-tool` v0.10.0 (improve the performance of `compact`: `mirage/ocaml-qcow#94`)
+- OSX Yosemite 10.10 is marked as deprecated
+- Linux Kernel 4.9.30
+
+**New**
+
+- GUI Option to opt out of credential store
+- GUI option to reset docker data without losing all settings (fixes [docker/for-mac#1309](https://github.com/docker/for-mac/issues/1309))
+- Add an experimental DNS name for the host: `docker.for.mac.localhost`
+- Support for client (i.e. "login") certificates for authenticating registry access (fixes [docker/for-mac#1320](https://github.com/docker/for-mac/issues/1320))
+
+**Bug fixes and minor changes**
+
+- Resync HTTP(S) proxy settings on application start
+- Interpret system proxy setting of localhost correctly (see [docker/for-mac#1511](https://github.com/docker/for-mac/issues/1511))
+- All docker binaries bundled with Docker for Mac are now signed
+- Display all docker cloud organizations and repositories in the whale menu (fixes [docker/for-mac#1538 ](https://github.com/docker/for-mac/issues/1538))
+- OSXFS: improved latency for many common operations (e.g. read and write) by approximately 25%
+
 ### Docker Community Edition 17.05.0-ce-mac11, 2017-05-12 (edge)
 
 **Upgrades**
 
-- security fix for CVE-2017-7308
+- Security fix for CVE-2017-7308
 
 ### Docker Community Edition 17.05.0-ce-mac9, 2017-05-09 (edge)
 
@@ -351,11 +752,11 @@ events or unexpected unmounts.
 
 **Bug fixes and minor changes**
 
-- Fix GUI crash when text table view was selected and windows re-opened (fixes [https://github.com/docker/for-mac/issues/1477](https://github.com/docker/for-mac/issues/1477))
+- Fixed GUI crash when text table view was selected and windows re-opened (fixes [docker/for-mac#1477](https://github.com/docker/for-mac/issues/1477))
 - Reset to default / uninstall also remove `config.json` and `osxkeychain` credentials
-- More detailed virtualbox uninstall requirements (cf https://github.com/docker/for-mac/issues/1343)
+- More detailed VirtualBox uninstall requirements ( [docker/for-mac#1343](https://github.com/docker/for-mac/issues/1343))
 - You are now prompted for your password, if you changed it in Docker Cloud.
-- Request time sync after waking up to improve [https://github.com/docker/for-mac/issues/17](https://github.com/docker/for-mac/issues/17)
+- Request time sync after waking up to improve [docker/for-mac#17](https://github.com/docker/for-mac/issues/17)
 
 ### Docker Community Edition 17.05.0-ce-rc1-mac8, 2017-04-13 (edge)
 
@@ -367,7 +768,8 @@ events or unexpected unmounts.
 ### Docker Community Edition 17.04.0-ce-mac7, 2017-04-06 (edge)
 
 **New**
-- osxfs: support for `cached` mount flag to improve performance of macOS mounts when strict consistency is not necessary
+
+- OSXFS: support for `cached` mount flag to improve performance of macOS mounts when strict consistency is not necessary
 
 **Upgrades**
 
@@ -377,7 +779,7 @@ events or unexpected unmounts.
 
 **Bug fixes and minor changes**
 
-- VPNKit: Improve DNS timeout handling (fixes https://github.com/docker/vpnkit/issues/202)
+- VPNKit: Improved DNS timeout handling (fixes [docker/for-mac#202](https://github.com/docker/vpnkit/issues/202))
 - VPNKit: Use DNSServiceRef API by default (only enabled for new installs or after factory reset)
 - Add a reset to factory defaults button when application crashes
 - Toolbox import dialog now defaults to "Skip"
@@ -519,7 +921,7 @@ events or unexpected unmounts.
 
 **New**
 
-- More options when moving disk image (see [Storage location](index.md#storage-location) under Advanced preference settings)
+- More options when moving disk image (see [Storage location](/docker-for-mac/index.md#storage-location) under Advanced preference settings)
 - Filesharing and daemon table empty fields are editable
 - DNS forwarder ignores responses from malfunctioning servers ([docker/for-mac#1025](https://github.com/docker/for-mac/issues/1025))
 - DNS forwarder send all queries in parallel, process results in order
@@ -702,9 +1104,9 @@ events or unexpected unmounts.
 
 **New**
 
-- Dedicated preference pane for advanced configuration of the docker daemon (edit daemon.json). See [[Daemon Advanced (JSON configuration file)](index.md#daemon-advanced-json-configuration-file).
+- Dedicated preference pane for advanced configuration of the docker daemon (edit daemon.json). See [[Daemon Advanced (JSON configuration file)](/docker-for-mac/index.md#daemon-advanced-json-configuration-file).
 
-- Docker Experimental mode can be toggled. See [Daemon Basic (experimental mode and registries)](index.md#daemon-basic-experimental-mode-and-registries).
+- Docker Experimental mode can be toggled. See [Daemon Basic (experimental mode and registries)](/docker-for-mac/index.md#daemon-basic-experimental-mode-and-registries).
 
 **Upgrades**
 
@@ -779,10 +1181,10 @@ events or unexpected unmounts.
 - Fix an issue where the whale animation during setting change was inconsistent
 - Fix an issue where some windows stayed hidden behind another app
 - Fix application of system or custom proxy settings over container restart
-- Increase default ulimit for memlock (fixes [https://github.com/docker/for-mac/issues/801](https://github.com/docker/for-mac/issues/801) )
+- Increase default ulimit for memlock (fixes [docker/for-mac#801](https://github.com/docker/for-mac/issues/801) )
 - Fix an issue where the Docker status would continue to be
       yellow/animated after the VM had started correctly
-- osxfs: fix the prohibition of chown on read-only or mode 0 files (fixes [https://github.com/docker/for-mac/issues/117](https://github.com/docker/for-mac/issues/117), [https://github.com/docker/for-mac/issues/263](https://github.com/docker/for-mac/issues/263), [https://github.com/docker/for-mac/issues/633](https://github.com/docker/for-mac/issues/633) )
+- osxfs: fix the prohibition of chown on read-only or mode 0 files (fixes [docker/for-mac#117](https://github.com/docker/for-mac/issues/117), [docker/for-mac#263](https://github.com/docker/for-mac/issues/263), [docker/for-mac#633](https://github.com/docker/for-mac/issues/633) )
 
 ### Beta 28 Release Notes (2016-10-13 1.12.2-rc3-beta28)
 
@@ -835,7 +1237,7 @@ events or unexpected unmounts.
 
 **Bug fixes and minor changes**
 
-* Fixed communications glitch when UI talks to `com.docker.vmnetd`. Fixes [https://github.com/docker/for-mac/issues/90](https://github.com/docker/for-mac/issues/90)
+* Fixed communications glitch when UI talks to `com.docker.vmnetd`. Fixes [docker/for-mac#90](https://github.com/docker/for-mac/issues/90)
 
 * UI fix for macOs 10.12
 
@@ -847,9 +1249,9 @@ events or unexpected unmounts.
 
 * `docker-diagnose` displays and records the time the diagnosis was captured
 
-* Ports are allowed to bind to host addresses other than `0.0.0.0` and `127.0.0.1`. Fixes issue reported in [https://github.com/docker/for-mac/issues/68](https://github.com/docker/for-mac/issues/68).
+* Ports are allowed to bind to host addresses other than `0.0.0.0` and `127.0.0.1`. Fixes issue reported in [docker/for-mac#68](https://github.com/docker/for-mac/issues/68).
 
-* We no longer compute the container folder in `com.docker.vmnetd`. Fixes [https://github.com/docker/for-mac/issues/47](https://github.com/docker/for-mac/issues/47).
+* We no longer compute the container folder in `com.docker.vmnetd`. Fixes [docker/for-mac#47](https://github.com/docker/for-mac/issues/47).
 
 **Known Issues**
 
@@ -998,7 +1400,7 @@ events or unexpected unmounts.
 
 **New**
 
-* Docker for Mac is now available from 2 channels: **stable** and **beta**. New features and bug fixes will go out first in auto-updates to users in the beta channel. Updates to the stable channel are much less frequent and happen in sync with major and minor releases of the Docker engine. Only features that are well-tested and ready for production are added to the stable channel releases. For downloads of both and more information, see the [Getting Started](index.md#download-docker-for-mac).
+* Docker for Mac is now available from 2 channels: **stable** and **beta**. New features and bug fixes will go out first in auto-updates to users in the beta channel. Updates to the stable channel are much less frequent and happen in sync with major and minor releases of the Docker engine. Only features that are well-tested and ready for production are added to the stable channel releases. For downloads of both and more information, see the [Getting Started](/docker-for-mac/index.md#download-docker-for-mac).
 
 **Upgrades**
 
@@ -1252,7 +1654,7 @@ The `osxfs` file system now persists ownership changes in an extended attribute.
 
 **Upgrades**
 
-* docker-compose 1.7.1 (see <a href="https://github.com/docker/compose/releases/tag/1.7.1" target="_blank"> changelog</a>)
+* docker-compose 1.7.1 (see [changelog](https://github.com/docker/compose/releases/tag/1.7.1){: target="_blank" class="_" })
 * Linux kernel 4.4.9
 
 **Bug fixes and minor changes**
@@ -1268,7 +1670,7 @@ The `osxfs` file system now persists ownership changes in an extended attribute.
   - Fixes to disk formatting scripts
   - Linux kernel upgrade to 4.4.9
 
-## Beta 10 Release (2016-05-03 1.11.0-beta10)
+### Beta 10 Release (2016-05-03 1.11.0-beta10)
 
 **New**
 
@@ -1442,7 +1844,7 @@ lead to `Docker.app` not starting on reboot
 
 - File system/sharing: Support `inotify` events so that file system events on the Mac will trigger file system activations inside Linux containers
 
-- Install Docker Machine as a part of Docker for Mac install in ``/usr/local`
+- Install Docker Machine as a part of Docker for Mac install in `/usr/local`
 
 - Added animated popover window to help first-time users get started
 

@@ -1,11 +1,12 @@
 ---
-title: "Docker Glossary"
+title: "Docker glossary"
 description: "Glossary of terms used around Docker"
 keywords: "glossary, docker, terms, definitions"
 notoc: true
 noratings: true
 redirect_from:
 - /engine/reference/glossary/
+- /reference/glossary/
 ---
 <!--
 To edit/add/remove glossary entries, visit the YAML file at:

@@ -1,5 +1,5 @@
 ---
-description: Learn how select the proper storage driver for your container.
+description: Learn how to select the proper storage driver for your container.
 keywords: container, storage, driver, AUFS, btfs, devicemapper,zvfs
 title: Select a storage driver
 ---
@@ -22,9 +22,6 @@ this decision, there are three high-level factors to consider:
   explicitly configured, assuming that the prerequisites for that storage driver
   are met:
 
-  - If `aufs` is available, default to it, because it is the oldest storage
-    driver. However, it is not universally available.
-
   - If possible, the storage driver with the least amount of configuration is
     used, such as `btrfs` or `zfs`. Each of these relies on the backing
     filesystem being configured correctly.
@@ -33,20 +30,22 @@ this decision, there are three high-level factors to consider:
     and stability in the most usual scenarios.
 
     - `overlay2` is preferred, followed by `overlay`. Neither of these requires
-      extra configuration.
+      extra configuration. `overlay2` is the default choice for Docker CE.
 
     - `devicemapper` is next, but requires `direct-lvm` for production
       environments, because `loopback-lvm`, while zero-configuration, has very
       poor performance.
 
   The selection order is defined in Docker's source code. You can see the order
-  for Docker 17.03 by looking at
-  [the source code](https://github.com/moby/moby/blob/v17.03.1-ce/daemon/graphdriver/driver_linux.go#L54-L63).
-  For a different Docker version, change the URL to that version.
+  by looking at
+  [the source code for Docker CE {{ site.docker_ce_stable_version }}](https://github.com/docker/docker-ce/blob/{{ site.docker_ce_stable_version }}/components/engine/daemon/graphdriver/driver_linux.go#L54-L63)
+  You can use the branch selector at the top of the file viewer to choose a
+  different branch, if you run a different version of Docker.
   {: id="storage-driver-order" }
 
 - Your choice may be limited by your Docker edition, operating system, and
-  distribution. For instance, `aufs` is only supported on Ubuntu and Debian,
+  distribution. For instance, `aufs` is only supported on Ubuntu and Debian, and
+  may require extra packages to be installed,
   while `btrfs` is only supported on SLES, which is only supported with Docker
   EE. See
   [Support storage drivers per Linux distribution](#supported-storage-drivers-per-linux-distribution).
@@ -84,23 +83,51 @@ For Docker CE, only some configurations are tested, and your operating system's
 kernel may not support every storage driver. In general, the following
 configurations work on recent versions of the Linux distribution:
 
-| Linux distribution   | Supported storage drivers            |
-|----------------------|--------------------------------------|
-| Docker CE on Ubuntu  | `aufs`, `devicemapper`, `overlay2` (Ubuntu 14.04.4 or later, 16.04 or later), `overlay`, `zfs` |
-| Docker CE on Debian  | `aufs`, `devicemapper`, `overlay2` (Debian Stretch), `overlay`                                 |
-| Docker CE on CentOS  | `devicemapper`                                                                                 |
-| Docker CE on Fedora  | `devicemapper`, `overlay2` (Fedora 26 or later, experimental), `overlay` (experimental)        |
+| Linux distribution  | Recommended storage drivers                                                                           |
+|:--------------------|:------------------------------------------------------------------------------------------------------|
+| Docker CE on Ubuntu | `aufs`, `devicemapper`, `overlay2` (Ubuntu 14.04.4 or later, 16.04 or later), `overlay`, `zfs`, `vfs` |
+| Docker CE on Debian | `aufs`, `devicemapper`, `overlay2` (Debian Stretch), `overlay`, `vfs`                                 |
+| Docker CE on CentOS | `devicemapper`, `vfs`                                                                                 |
+| Docker CE on Fedora | `devicemapper`, `overlay2` (Fedora 26 or later, experimental), `overlay` (experimental), `vfs`        |
+
+When possible, `overlay2` is the recommended storage driver. When installing
+Docker for the first time, `overlay2` is used by default. Previously, `aufs` was
+used by default when available, but this is no longer the case. If you want to
+use `aufs` on new installations going forward, you need to explicitly configure
+it, and you may need to install extra packages, such as `linux-image-extra`.
+See [aufs](aufs-driver.md).
+
+On existing installations using `aufs`, it will continue to be used.
 
 When in doubt, the best all-around configuration is to use a modern Linux
 distribution with a kernel that supports the `overlay2` storage driver, and to
 use Docker volumes for write-heavy workloads instead of relying on writing data
 to the container's writable layer.
 
+The `vfs` storage driver is usually not the best choice. Before using the `vfs`
+storage driver, be sure to read about
+[its performance and storage characteristics and limitations](vfs-driver.md).
+
+> **Expectations for non-recommended storage drivers**: Commercial support is
+> not available for Docker CE, and you can technically use any storage driver
+> that is available for your platform. For instance, you can use `btrfs` with
+> Docker CE, even though it is not recommended on any platform for Docker CE,
+> and you do so at your own risk.
+>
+> The recommendations in the table above are based on automated regression
+> testing and the configurations that are known to work for a large number of
+> users. If you use a recommended configuration and find a reproducible issue,
+> it is likely to be fixed very quickly. If the driver that you want to use is
+> not recommended according to this table, you can run it at your own risk. You
+> can and should still report any issues you run into. However, such issues will
+> have a lower priority than issues encountered when using a recommended
+> configuration.
+
 ### Docker for Mac and Docker for Windows
 
-Docker for Mac and Docker for Windows only support `overlay2` `aufs`, or
-`overlay`. However, `overlay` is not recommended. `aufs` is the default in
-stable releases and `overlay2` is the default in Edge releases. In addition,
+Docker for Mac and Docker for Windows are intended for development, rather
+than production. Modifying the storage driver on these platforms is not
+possible.
 
 ## Supported backing filesystems
 
@@ -108,13 +135,13 @@ With regard to Docker, the backing filesystem is the filesystem where
 `/var/lib/docker/` is located. Some storage drivers only work with specific
 backing filesystems.
 
-| Storage driver        | Supported backing filesystems  |
-|-----------------------|--------------------------------|
-| `overlay`, `overlay2` | `ext4`, `xfs`                  |
-| `aufs`                | `ext4`, `xfs`                  |
-| `devicemapper`        | `direct-lvm`                   |
-| `btrfs`               | `btrfs`                        |
-| `zfs`                 | `zfs`                          |
+| Storage driver        | Supported backing filesystems |
+|:----------------------|:------------------------------|
+| `overlay`, `overlay2` | `ext4`, `xfs`                 |
+| `aufs`                | `ext4`, `xfs`                 |
+| `devicemapper`        | `direct-lvm`                  |
+| `btrfs`               | `btrfs`                       |
+| `zfs`                 | `zfs`                         |
 
 
 ## Other considerations
@@ -149,7 +176,7 @@ Each Docker storage driver is based on a Linux filesystem or volume manager. Be
 sure to follow existing best practices for operating your storage driver
 (filesystem or volume manager) on top of your shared storage system. For
 example, if using the ZFS storage driver on top of a shared storage system, be
-sure to follow best practices for operating aZFS filesystems on top of that
+sure to follow best practices for operating ZFS filesystems on top of that
 specific shared storage system.
 
 ### Stability
@@ -173,15 +200,10 @@ storage drivers. Make sure to use equivalent hardware and workloads to match
 production conditions, so you can see which storage driver offers the best
 overall performance.
 
-## Check and set your current storage driver
+## Check your current storage driver
 
 The detailed documentation for each individual storage driver details all of the
-set-up steps to use a given storage driver. This is a very high-level summary of
-how to change the storage driver.
-
-> **Important**: Some storage driver types, such as `devicemapper`, `btrfs`, and
-> `zfs`, require additional set-up at the operating system level before you can
-> use them with Docker.
+set-up steps to use a given storage driver.
 
 To see what storage driver Docker is currently using, use `docker info` and look
 for the `Storage Driver` line:
@@ -196,33 +218,16 @@ Storage Driver: overlay
 <output truncated>
 ```
 
-To set the storage driver, set the option in the `daemon.json`
-file, which is located in `/etc/docker/` on Linux and
-`C:\ProgramData\docker\config\` on Windows Server. If you use Docker for Mac or
-Docker for Windows, click the Docker icon, choose **Preferences**, and choose
-**Daemon** on Docker for Mac or Docker for Windows.
+To change the storage driver, see the specific instructions for the new storage
+driver. Some drivers require additional configuration, including configuration
+to physical or logical disks on the Docker host.
 
-If the `daemon.json` file does not exist, create it. Assuming there are no other
-settings in the file, it should have the following contents:
-
-```json
-{
-  "storage-driver": "devicemapper"
-}
-```
-
-You can specify any valid storage driver in place of `devicemapper`.
-
-Restart Docker for the changes to take effect. After restarting, run
-`docker info` again to verify that the new storage driver is being used.
-
-### Extra steps for Docker for Mac or Docker for Windows
-
-Before you change the default storage driver on Docker for Mac or Docker for
-Windows, it is recommended to do a factory reset to wipe the old storage
-location, since you will not be able to access it after you change the storage
-driver. If you need to save any containers, use `docker save` before doing the
-reset.
+> **Important**: When you change the storage driver, any existing images and
+> containers become inaccessible. This is because their layers cannot be used
+> by the new storage driver. If you revert your changes, you will be able to
+> access the old images and containers again, but any that you pulled or
+> created using the new driver will then be inaccessible.
+{:.important}
 
 ## Related information
 
@@ -232,4 +237,3 @@ reset.
 * [`overlay` and `overlay2` storage drivers in practice](overlayfs-driver.md)
 * [`btrfs` storage driver in practice](btrfs-driver.md)
 * [`zfs` storage driver in practice](zfs-driver.md)
-* [Device Mapper storage driver in practice](device-mapper-driver.md)

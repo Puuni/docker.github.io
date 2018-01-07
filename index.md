@@ -8,13 +8,31 @@ notags: true
 ---
 {% assign page.title = site.name %}
 
+<div class="row">
+<div markdown="1" class="col-xs-12 col-sm-12 col-md-12 col-lg-6 block">
+
 ## Get started with Docker
 
-Try our new multi-part walkthrough that goes from writing your first app,
-data storage, networking, and swarms, ending with your app running on
-production servers in the cloud. Total reading time is less than an hour!
+Try our new multi-part walkthrough that covers writing your first app,
+data storage, networking, and swarms, and ends with your app running on
+production servers in the cloud. Total reading time is less than an hour.
 
-[Get started with Docker](/get-started/){: class="button outline-btn" style="margin-bottom:30px"}
+[Get started with Docker](/get-started/){: class="button outline-btn"}
+
+</div>
+<div markdown="1" class="col-xs-12 col-sm-12 col-md-12 col-lg-6 block">
+
+## Try Docker Enterprise Edition
+
+Run your solution in production with Docker Enterprise Edition and you'll get a
+management dashboard, security scanning, LDAP integration, content signing,
+multi-cloud support, and more. Click below to test-drive a running instance of
+Docker EE without installing anything.
+
+[Try Docker Enterprise Edition](https://dockertrial.com){: class="button outline-btn" onclick="ga('send', 'event', 'EE Trial Referral', 'Front Page', 'Click');"}
+
+</div>
+</div>
 
 {% if site.edge == true %}
 {% capture ce-edge-section %}
@@ -215,6 +233,19 @@ Continue reading, or go straight to [API and CLI](#api-and-cli),
 <div class="row">
 <div markdown="1" class="col-xs-12 col-sm-12 col-md-12 col-lg-6 block">
 
+### Docker Community Edition
+
+Get started with Docker and experimenting with container-based apps. Docker CE
+is available on many platforms, from desktop to cloud to server. Build and share
+containers and automate the development pipeline from a single environment.
+Choose the Edge channel to get access to the latest features, or the Stable
+channel for more predictability.
+
+[Learn more about Docker CE](/engine/installation/#platform-support-matrix){: class="button outline-btn"}
+
+</div>
+<div markdown="1" class="col-xs-12 col-sm-12 col-md-12 col-lg-6 block">
+
 ### Docker Enterprise Edition
 
 Designed for enterprise development and IT teams who build, ship, and run
@@ -224,19 +255,7 @@ the industry to modernize all applications. Docker EE Advanced comes with enterp
 [add-ons](#docker-ee-add-ons) like UCP and DTR.
 
 [Learn more about Docker EE](/engine/installation/#platform-support-matrix){: class="button outline-btn"}
-</div>
 
-<div markdown="1" class="col-xs-12 col-sm-12 col-md-12 col-lg-6 block">
-
-### Docker Community Edition
-
-Get started with Docker and experimenting with container-based apps. Docker CE
-is available on many platforms, from desktop to cloud to server. Build and share
-containers and automate the development pipeline from a single environment.
-Choose the Edge channel to get fast access to the latest features, or the Stable
-channel for more predictability.
-
-[Learn more about Docker CE](/engine/installation/#platform-support-matrix){: class="button outline-btn"}
 </div>
 </div><!-- end row -->
 
@@ -319,9 +338,9 @@ channel for more predictability.
         <div class="col-sm-12 col-md-12 col-lg-4 block">
             <div class="component">
                 <div class="component-icon">
-                    <a href="datacenter/ucp/2.1/guides/"> <img src="../images/UCP_48.svg" alt="Docker Universal Control Plane"> </a>
+                    <a href="datacenter/ucp/{{ site.ucp_version }}/guides/"> <img src="../images/UCP_48.svg" alt="Universal Control Plane"> </a>
                 </div>
-                <h3 id="ucp"><a href="datacenter/ucp/2.1/guides/">Docker Universal Control Plane</a></h3>
+                <h3 id="ucp"><a href="datacenter/ucp/{{ site.ucp_version }}/guides/">Universal Control Plane</a></h3>
                 <p>(UCP) Manage a cluster of on-premise Docker hosts like a single machine with this enterprise product.</p>
             </div>
         </div>
@@ -329,9 +348,9 @@ channel for more predictability.
         <div class="col-sm-12 col-md-12 col-lg-4 block">
             <div class="component">
                 <div class="component-icon">
-                    <a href="datacenter/dtr/2.2/guides/"> <img src="../images/dtr_48.svg" alt="Docker Trusted Registry"> </a>
+                    <a href="datacenter/dtr/{{ site.dtr_version }}/guides/"> <img src="../images/dtr_48.svg" alt="Docker Trusted Registry"> </a>
                 </div>
-                <h3 id="dtr"><a href="datacenter/dtr/2.2/guides/">Docker Trusted Registry</a></h3>
+                <h3 id="dtr"><a href="datacenter/dtr/{{ site.dtr_version }}/guides/">Docker Trusted Registry</a></h3>
                 <p>(DTR) An enterprise image storage solution you can install behind a firewall to manage images and access.</p>
             </div>
         </div>

@@ -4,7 +4,7 @@ description: Learn how to back up your Docker Trusted Registry cluster, and to r
 keywords: docker, registry, high-availability, backup, recovery
 ---
 
-DTR needs that a majority (n/2 + 1) of its replicas are healthy at all times
+DTR requires that a majority (n/2 + 1) of its replicas are healthy at all times
 for it to work. So if a majority of replicas is unhealthy or lost, the only
 way to restore DTR to a working state, is by recovering from a backup. This
 is why it's important to ensure replicas are healthy and perform frequent
@@ -39,7 +39,7 @@ command backs up the following data:
 | Scan results                       | yes       |                                                                |
 | Certificates and keys              | yes       |                                                                |
 | Image content                      | no        | Needs to be backed up separately, depends on DTR configuration |
-| Users, orgs, teams                 | no        | Create a UCP backup to back up this data                        |
+| Users, orgs, teams                 | no        | Create a UCP backup to back up this data                       |
 | Vulnerability database             | no        | Can be re-downloaded after a restore                           |
 
 
@@ -88,15 +88,19 @@ docker run -i --rm \
 
 Where:
 
-* `<version>`, the version of DTR you're running
-* `<ucp-url>` is the url you use to access UCP
-* `<ucp-username>` is the username of a UCP administrator
-* `<replica-id>` is the ID of the DTR replica to back up
+* `<version>`, the version of DTR you're running.
+* `<ucp-url>` is the url you use to access UCP.
+* `<ucp-username>` is the username of a UCP administrator.
+* `<replica-id>` is the ID of the DTR replica to back up.
 
+You can find the DTR replica IDs by navigating to the **Stacks** page in
+the **UCP web UI**.
 
-This prompts you for the UCP password, backs up the DTR metadata and saves the
-result into a tar archive. You can learn more about the supported flags in
-the [reference documentation](../../reference/cli/backup.md).
+![replica id](../images/backup-and-disaster-recovery-1.png){: .with-border}
+
+The backup script prompts you for the UCP password, backs up the DTR metadata,
+and saves the result into a tar archive. You can learn more about the supported
+flags in the [reference documentation](../../reference/cli/backup.md).
 
 The backup command doesn't stop DTR, so that you can take frequent backups
 without affecting your users. Also, the backup contains sensitive information
@@ -125,9 +129,6 @@ dtr-backup-v2.2.3/rethink/layers/
 And the backup of the DTR metadata should look like:
 
 ```none
-tar -tf /tmp/backup-metadata.tar
-
-# The archive should look like this
 dtr-backup-v2.2.1/
 dtr-backup-v2.2.1/rethink/
 dtr-backup-v2.2.1/rethink/properties/

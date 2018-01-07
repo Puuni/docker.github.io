@@ -1,7 +1,7 @@
 ---
 description: Explains how to run a registry on macOS
 keywords: registry, on-prem, images, tags, repository, distribution, macOS, recipe, advanced
-title: macOS Setup Guide
+title: macOS setup guide
 ---
 
 ## Use-case
@@ -12,7 +12,7 @@ This is useful if you intend to run a registry server natively on macOS.
 
 You can start a VM on macOS, and deploy your registry normally as a container using Docker inside that VM.
 
-The simplest road to get there is traditionally to use the [docker Toolbox](https://www.docker.com/toolbox), or [docker-machine](/machine/index.md), which usually relies on the [boot2docker](http://boot2docker.io/) iso inside a VirtualBox VM.
+The simplest road to get there is traditionally to use the [docker Toolbox](https://www.docker.com/toolbox), or [docker-machine](/machine/index.md), which usually relies on the [boot2docker](http://boot2docker.io/) ISO inside a VirtualBox VM.
 
 ### Solution
 
@@ -44,6 +44,7 @@ If you want to understand, you should read [How to Write Go Code](https://golang
 ## Build the binary
 
     GOPATH=$(PWD)/Godeps/_workspace:$GOPATH make binaries
+    sudo mkdir -p /usr/local/libexec
     sudo cp bin/registry /usr/local/libexec/registry
 
 ## Setup
@@ -53,23 +54,23 @@ Copy the registry configuration file in place:
     mkdir /Users/Shared/Registry
     cp docs/osx/config.yml /Users/Shared/Registry/config.yml
 
-## Running the Docker Registry under launchd
+## Run the Docker Registry under launchd
 
 Copy the Docker registry plist into place:
 
-    plutil -lint docs/osx/com.docker.registry.plist
-    cp docs/osx/com.docker.registry.plist ~/Library/LaunchAgents/
+    plutil -lint registry/recipes/osx/com.docker.registry.plist
+    cp registry/recipes/osx/com.docker.registry.plist ~/Library/LaunchAgents/
     chmod 644 ~/Library/LaunchAgents/com.docker.registry.plist
 
 Start the Docker registry:
 
     launchctl load ~/Library/LaunchAgents/com.docker.registry.plist
 
-### Restarting the docker registry service
+### Restart the docker registry service
 
     launchctl stop com.docker.registry
     launchctl start com.docker.registry
 
-### Unloading the docker registry service
+### Unload the docker registry service
 
     launchctl unload ~/Library/LaunchAgents/com.docker.registry.plist

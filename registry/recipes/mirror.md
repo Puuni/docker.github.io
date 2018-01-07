@@ -2,6 +2,8 @@
 description: Setting-up a local mirror for Docker Hub images
 keywords: registry, on-prem, images, tags, repository, distribution, mirror, Hub, recipe, advanced
 title: Registry as a pull through cache
+redirect_from:
+- /engine/admin/registry_mirror/
 ---
 
 ## Use-case
@@ -90,8 +92,8 @@ proxy:
 ### Configure the Docker daemon
 
 Either pass the `--registry-mirror` option when starting `dockerd` manually,
-or edit `/etc/docker/daemon.json` and add the `registry-mirrors` key and value,
-to make the change persistent.
+or edit [`/etc/docker/daemon.json`](/engine/reference/commandline/dockerd.md#daemon-configuration-file)
+and add the `registry-mirrors` key and value, to make the change persistent.
 
 ```json
 {
@@ -99,4 +101,49 @@ to make the change persistent.
 }
 ```
 
-Save the file and restart Docker for the change to take effect.
+Save the file and reload Docker for the change to take effect.
+
+> Some log messages that appear to be errors are actually informational messages.
+>
+> Check the `level` field to determine whether
+> the message is warning you about an error or is giving you information.
+> For example, this log message is informational:
+>
+> ```conf
+> time="2017-06-02T15:47:37Z" level=info msg="error statting local store, serving from upstream: unknown blob" go.version=go1.7.4
+> ```
+>
+> It's telling you that the file doesn't exist yet in the local cache and is
+> being pulled from upstream. 
+
+
+## Use case: the China registry mirror
+
+The URL of the registry mirror for China is `registry.docker-cn.com`. You can
+pull images from this mirror just like you do for other registries by
+specifying the full path, including the registry, in your `docker pull`
+command, for example:
+
+```bash
+$ docker pull registry.docker-cn.com/library/ubuntu
+```
+
+You can add `"https://registry.docker-cn.com"` to the `registry-mirrors` array
+in [`/etc/docker/daemon.json`](/engine/reference/commandline/dockerd.md#daemon-configuration-file)
+to pull from the China registry mirror by default.  
+
+```json
+{
+  "registry-mirrors": ["https://registry.docker-cn.com"]
+}
+```
+
+Save the file and reload Docker for the change to take effect.
+
+Or, you can configure the Docker daemon with the `--registry-mirror` startup
+parameter:
+
+```bash
+$ dockerd --registry-mirror=https://registry.docker-cn.com
+```
+

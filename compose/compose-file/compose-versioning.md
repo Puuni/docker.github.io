@@ -9,18 +9,35 @@ networks, and volumes for a Docker application.
 
 The Compose file formats are now described in these references, specific to each version.
 
-| **Reference file**       | **What changed in this version** |
-|  -------------------     |    ------------------            |
-|[Version 3](index.md) (most current, and recommended) |[Version 3 updates](#version-3) |
-| [Version 2](compose-file-v2.md)  |[Version 2 updates](#version-2) |
-| [Version 1](compose-file-v1.md) | [Version 1 updates](#version-1) |
+| **Reference file**                                    | **What changed in this version** |
+|:------------------------------------------------------|:---------------------------------|
+| [Version 3](index.md) (most current, and recommended) | [Version 3 updates](#version-3)  |
+| [Version 2](compose-file-v2.md)                       | [Version 2 updates](#version-2)  |
+| [Version 1](compose-file-v1.md)                       | [Version 1 updates](#version-1)  |
 
 The topics below explain the differences among the versions, Docker Engine
 compatibility, and [how to upgrade](#upgrading).
 
 ## Compatibility matrix
 
+There are several versions of the Compose file format – 1, 2, 2.x, and 3.x
+
 {% include content/compose-matrix.md %}
+
+> Looking for more detail on Docker and Compose compatibility?
+>
+> We recommend keeping up-to-date with newer releases as much as possible.
+However, if you are using an older version of Docker and want to determine which
+Compose release is compatible, please refer to the [Compose release
+notes](https://github.com/docker/compose/releases/). Each set of release notes
+gives details on which versions of Docker Engine are supported, along
+with compatible Compose file format versions. (See also, the discussion in
+[issue #3404](https://github.com/docker/docker.github.io/issues/3404).)
+
+
+For details on versions and how to upgrade, see
+[Versioning](compose-versioning.md#versioning) and
+[Upgrading](compose-versioning.md#upgrading).
 
 ## Versioning
 
@@ -29,7 +46,7 @@ There are currently three versions of the Compose file format:
 - Version 1, the legacy format. This is specified by
 omitting a `version` key at the root of the YAML.
 
-- Version 2.x. This is specified with a `version: '2'` or `version: '2.1'` entry at the root of the YAML.
+- Version 2.x. This is specified with a `version: '2'` or `version: '2.1'`, etc., entry at the root of the YAML.
 
 - Version 3.x, the latest and recommended version, designed to
 be cross-compatible between Compose and the Docker Engine's
@@ -58,18 +75,18 @@ These differences are explained below.
 ### Version 1
 
 Compose files that do not declare a version are considered "version 1". In those
-files, all the [services](index.md#service-configuration-reference) are
+files, all the [services](/compose/compose-file/index.md#service-configuration-reference) are
 declared at the root of the document.
 
 Version 1 is supported by **Compose up to 1.6.x**. It will be deprecated in a
 future Compose release.
 
 Version 1 files cannot declare named
-[volumes](index.md#volume-configuration-reference), [networks](index.md#network-configuration-reference) or
-[build arguments](index.md#args).
+[volumes](/compose/compose-file/index.md#volume-configuration-reference), [networks](/compose/compose-file/index.md#network-configuration-reference) or
+[build arguments](/compose/compose-file/index.md#args).
 
-Compose does not take advantage of [networking](index.md#networking.md) when you use
-version 1: every container is placed on the default `bridge` network and is
+Compose does not take advantage of [networking](/compose/networking.md) when you
+use version 1: every container is placed on the default `bridge` network and is
 reachable from every other container at its IP address. You will need to use
 [links](compose-file-v1.md#links) to enable discovery between containers.
 
@@ -149,7 +166,7 @@ Several other options were added to support networking, such as:
 
 * [`aliases`](compose-file-v2.md#aliases)
 
-* The [`depends_on`](compose-file-v2.md#dependson) option can be used in place of links to indicate dependencies
+* The [`depends_on`](compose-file-v2.md#depends_on) option can be used in place of links to indicate dependencies
 between services and startup order.
 
       version: '2'
@@ -171,7 +188,8 @@ between services and startup order.
 ### Version 2.1
 
 An upgrade of [version 2](#version-2) that introduces new parameters only
-available with Docker Engine version **1.12.0+**
+available with Docker Engine version **1.12.0+**. Version 2.1 files are
+supported by **Compose 1.9.0+**.
 
 Introduces the following additional parameters:
 
@@ -179,20 +197,37 @@ Introduces the following additional parameters:
 - [`isolation`](compose-file-v2.md#isolation)
 - `labels` for [volumes](compose-file-v2.md#volume-configuration-reference) and
   [networks](compose-file-v2.md#network-configuration-reference)
+- `name` for [volumes](compose-file-v2.md#volume-configuration-reference)
 - [`userns_mode`](compose-file-v2.md#userns_mode)
 - [`healthcheck`](compose-file-v2.md#healthcheck)
 - [`sysctls`](compose-file-v2.md#sysctls)
+- [`pids_limit`](compose-file-v2.md#pidslimit)
+- [`oom_kill_disable`](compose-file-v2.md#oomkilldisable)
 
 ### Version 2.2
 
 An upgrade of [version 2.1](#version-21) that introduces new parameters only
-available with Docker Engine version **1.13.0+**. This version also allows
-to specify default scale numbers inside the service's configuration.
+available with Docker Engine version **1.13.0+**.  Version 2.2 files are
+supported by **Compose 1.13.0+**. This version also allows you to specify
+default scale numbers inside the service's configuration.
 
 Introduces the following additional parameters:
 
 - [`init`](compose-file-v2.md#init)
 - [`scale`](compose-file-v2.md#scale)
+
+### Version 2.3
+
+An upgrade of [version 2.2](#version-22) that introduces new parameters only
+available with Docker Engine version **17.06.0+**. Version 2.3 files are
+supported by **Compose 1.16.0+**.
+
+Introduces the following additional parameters:
+
+- [`target`](compose-file-v2.md#target), [`extra_hosts`](compose-file-v2.md#extrahosts) and
+  [`shm_size`](compose-file-v2.md#shmsize) for [build configurations](compose-file-v2.md#build)
+- `start_period` for [`healthchecks`](compose-file-v2.md#healthcheck)
+- ["Long syntax" for volumes](compose-file-v2.md#long-syntax)
 
 ### Version 3
 
@@ -200,11 +235,47 @@ Designed to be cross-compatible between Compose and the Docker Engine's
 [swarm mode](/engine/swarm/index.md), version 3 removes several options and adds
 several more.
 
-- Removed: `volume_driver`, `volumes_from`, `cpu_shares`, `cpu_quota`, `cpuset`,
-  `mem_limit`, `memswap_limit`, `extends`, `group_add`. See the [upgrading](#upgrading)
-  guide for how to migrate away from these.
+- Removed: `volume_driver`, `volumes_from`, `cpu_shares`, `cpu_quota`,
+`cpuset`, `mem_limit`, `memswap_limit`, `extends`, `group_add`. See
+the [upgrading](#upgrading) guide for how to migrate away from these.
+(For more information on `extends`, please see [Extending services](/compose/extends.md#extending-services).)
 
-- Added: [deploy](index.md#deploy)
+- Added: [deploy](/compose/compose-file/index.md#deploy)
+
+### Version 3.3
+
+An upgrade of [version 3](#version-3) that introduces new parameters only
+available with Docker Engine version **17.06.0+**, and higher.
+
+Introduces the following additional parameters:
+
+- [build `labels`](/compose/compose-file/index.md#build)
+- [`credential_spec`](/compose/compose-file/index.md#credentialspec)
+- [`configs`](/compose/compose-file/index.md#configs)
+- [deploy `endpoint_mode`](/compose/compose-file/index.md#endpointmode)
+
+### Version 3.4
+
+An upgrade of [version 3](#version-3) that introduces new parameters. It is
+only available with Docker Engine version **17.09.0** and higher.
+
+Introduces the following additional parameters:
+
+- `target` and `network` in [build configurations](/compose/compose-file/index.md#build)
+- `start_period` for [`healthchecks`](/compose/compose-file/index.md#healthcheck)
+- `order` for [update configurations](/compose/compose-file/index.md#update_config)
+- `name` for [volumes](/compose/compose-file/index.md#volume-configuration-reference)
+
+### Version 3.5
+
+An upgrade of [version 3](#version-3) that introduces new parameters. It is
+only available with Docker Engine version **17.12.0** and higher.
+
+Introduces the following additional parameters:
+
+- [`isolation`](index.md#isolation) in service definitions
+- `name` for networks, secrets and configs
+- `shm_size` in [build configurations](index.md#build)
 
 ## Upgrading
 
@@ -215,7 +286,7 @@ several options have been removed:
 
 -   `volume_driver`: Instead of setting the volume driver on the service, define
     a volume using the
-    [top-level `volumes` option](index.md#volume-configuration-reference)
+    [top-level `volumes` option](/compose/compose-file/index.md#volume-configuration-reference)
     and specify the driver there.
 
         version: "3"
@@ -229,17 +300,21 @@ several options have been removed:
             driver: mydriver
 
 -   `volumes_from`: To share a volume between services, define it using the
-    [top-level `volumes` option](index.md#volume-configuration-reference)
+    [top-level `volumes` option](/compose/compose-file/index.md#volume-configuration-reference)
     and reference it from each service that shares it using the
-    [service-level `volumes` option](index.md#volumes-volumedriver).
+    [service-level `volumes` option](/compose/compose-file/index.md#volumes-volumedriver).
 
 -   `cpu_shares`, `cpu_quota`, `cpuset`, `mem_limit`, `memswap_limit`: These
-    have been replaced by the [resources](index.md#resources) key under
+    have been replaced by the [resources](/compose/compose-file/index.md#resources) key under
     `deploy`. Note that `deploy` configuration only takes effect when using
     `docker stack deploy`, and is ignored by `docker-compose`.
 
--   `extends`: This option has been removed for `version: "3.x"` Compose files.
+-   `extends`: This option has been removed for `version: "3.x"`
+Compose files. (For more information, please see [Extending services](/compose/extends.md#extending-services).)
 -   `group_add`: This option has been removed for `version: "3.x"` Compose files.
+-   `pids_limit`: This option has not been introduced in `version: "3.x"` Compose files.
+-   `link_local_ips` in `networks`: This option has not been introduced in
+    `version: "3.x"` Compose files.
 
 ### Version 1 to 2.x
 

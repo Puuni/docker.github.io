@@ -23,7 +23,7 @@ documentation, on [Docker for Windows issues on
 GitHub](https://github.com/docker/for-win/issues), or the [Docker for Windows
 forum](https://forums.docker.com/c/docker-for-windows), we can help you
 troubleshoot the log data. See [Diagnose and
-Feedback](index.md#diagnose-and-feedback) to learn about diagnostics and how to
+Feedback](/docker-for-windows/index.md#diagnose-and-feedback) to learn about diagnostics and how to
 create new issues on GitHub.
 
 ## Checking the Logs
@@ -46,16 +46,41 @@ can use in email or the forum to reference the upload.
 
 ## Troubleshooting
 
+### Make sure certificates are set up correctly
+
+Docker for Windows will ignore certificates listed under insecure registries,
+and will not send client certificates to them. Commands like `docker run` that
+attempt to pull from the registry will produce error messages on the command
+line, like this:
+
+```
+Error response from daemon: Get http://192.168.203.139:5858/v2/: malformed HTTP response "\x15\x03\x01\x00\x02\x02"
+```
+
+As well as on the registry. For example:
+
+```
+2017/06/20 18:15:30 http: TLS handshake error from 192.168.203.139:52882: tls: client didn't provide a certificate
+2017/06/20 18:15:30 http: TLS handshake error from 192.168.203.139:52883: tls: first record does not look like a TLS handshake
+```
+
+For more about using client and server side certificates, see [How do I add
+custom CA certificates?](/docker-for-windows/index.md#how-do-i-add-custom-ca
+certificates) and [How do I add client
+certificates?](/docker-for-windows/index.md#how-do-i-add-client-certificates) in
+the Getting Started topic.
+
 ### Permissions errors on data directories for shared volumes
 
-Docker for Windows sets permissions on [shared volumes](/docker-for-windows/index.md#shared-drives) to a default value of
-[0770](http://permissions-calculator.org/decode/0770/) (`read`, `write`,
-`execute` permissions for `user` and `group`, none for other). If you are
+Docker for Windows sets permissions on [shared
+volumes](/docker-for-windows/index.md#shared-drives) to a default value of
+[0755](http://permissions-calculator.org/decode/0755/) (`read`, `write`,
+`execute` permissions for `user`, `read` and `execute` for `group`). If you are
 working with applications that require permissions different than this default,
 you will likely get errors similar to the following.
 
-```
-Data directory (/var/www/html/data) is readable by other users. Please change the permissions to 0770 so that the directory cannot be listed by other users.
+```none
+Data directory (/var/www/html/data) is readable by other users. Please change the permissions to 0755 so that the directory cannot be listed by other users.
 ```
 
 The default permissions on shared volumes are not configurable. If you are
@@ -93,23 +118,25 @@ applications](https://github.com/remy/nodemon#application-isnt-restarting)
 If you are using mounted volumes and get runtime errors indicating an
 application file is not found, a volume mount is denied, or a service cannot
 start (e.g., with [Docker Compose](/compose/gettingstarted.md)), you might need
-to enable [shared drives](index.md#shared-drives).
+to enable [shared drives](/docker-for-windows/index.md#shared-drives).
 
-Volume mounting requires shared drives for Linux containers (not for Windows
-containers). Go to <img src="images/whale-x.png"> --> **Settings** --> **Shared
-Drives** and share the drive that contains the Dockerfile and volume.
+Volume mounting requires shared drives for Linux containers
+(not for Windows containers). Go to
+![whale menu](/docker-for-mac/images/whale-x.png){: .inline} -->
+**Settings** --> **Shared Drives** and share the drive that
+contains the Dockerfile and volume.
 
 ### Verify domain user has permissions for shared drives (volumes)
 
 >**Tip**: Shared drives are only required for volume mounting [Linux
-containers](index.md#switch-between-windows-and-linux-containers),
+containers](/docker-for-windows/index.md#switch-between-windows-and-linux-containers),
 not Windows containers.
 
 Permissions to access shared drives are tied to the username and password you
-use to set up shared drives. (See [Shared Drives](index.md#shared-drives).) If
-you run `docker` commands and tasks under a different username than the one used
-to set up shared drives, your containers will not have permissions to access the
-mounted volumes. The volumes will show as empty.
+use to set up [shared drives](/docker-for-windows/index.md#shared-drives). If you run `docker`
+commands and tasks under a different username than the one used to set up shared
+drives, your containers will not have permissions to access the mounted volumes.
+The volumes will show as empty.
 
 The solution to this is to switch to the domain user account and reset
 credentials on shared drives.
@@ -135,7 +162,7 @@ local user is `samstevens` and the domain user is `merlin`.
 
 		net share c /delete
 
-4. Re-share the drive via the [Shared Drives dialog](index.md#shared-drives), and provide the Windows domain user account credentials.
+4. Re-share the drive via the [Shared Drives dialog](/docker-for-windows/index.md#shared-drives), and provide the Windows domain user account credentials.
 
 5. Re-run `net share c`.
 
@@ -150,10 +177,37 @@ local user is `samstevens` and the domain user is `merlin`.
 
 See also, the related issue on GitHub, [Mounted volumes are empty in the container](https://github.com/docker/for-win/issues/25).
 
+### Volume mounts from host paths use a `nobrl` option to override database locking  
+
+You may encounter problems using volume mounts on the host, depending on the
+database software and which options are enabled. Docker for Windows uses
+[SMB/CIFS
+protocols](https://msdn.microsoft.com/en-us/library/windows/desktop/aa365233(v=vs.85).aspx)
+to mount host paths, and mounts them with the `nobrl` option, which prevents
+lock requests from being sent to the database server
+([docker/for-win#11](https://github.com/docker/for-win/issues/11),
+[docker/for-win#694](https://github.com/docker/for-win/issues/694)). This is
+done to ensure container access to database files shared from the host. Although
+it solves the over-the-network database access problem, this "unlocked" strategy
+can interfere with other aspects of database functionality (for example,
+write-ahead logging (WAL) with SQLite, as described in
+[docker/for-win#1886](https://github.com/Sonarr/Sonarr/issues/1886)).
+
+If possible, avoid using shared drives for volume mounts on the host with network paths, and
+instead mount on the MobyVM, or create a [data
+volume](https://docs.docker.com/engine/tutorials/dockervolumes.md#data-volumes)
+(named volume) or [data
+container](/engine/tutorials/dockervolumes.md#creating-and-mounting-a-data-volume-container).
+See also, the [volumes key under service
+configuration](/compose/compose-file/index.md#volumes) and the [volume
+configuration
+reference](/compose/compose-file/index.md#volume-configuration-reference) in the
+Compose file documentation.
+
 ### Local security policies can block shared drives and cause login errors
 
 You need permissions to mount shared drives in order to use the Docker for
-Windows [shared drives](index.md#shared-drives) feature.
+Windows [shared drives](/docker-for-windows/index.md#shared-drives) feature.
 
 If local policy prevents this, you will get errors when you attempt to enable
 shared drives on Docker. This is not something Docker can resolve, you do need
@@ -161,7 +215,7 @@ these permissions to use the feature.
 
 Here are snip-its from example error messages:
 
-```
+```none
 Logon failure: the user has not been granted the requested logon type at
 this computer.
 
@@ -190,7 +244,9 @@ commands ultimately get passed to Unix commands inside a Unix based container
 (for example, a shell script passed to `/bin/sh`). If Windows style line endings
 are used, `docker run` will fail with syntax errors.
 
-For an example of this issue and the resolution, see this issue on GitHub: <a href="https://github.com/moby/moby/issues/24388">Docker RUN fails to execute shell script (https://github.com/moby/moby/issues/24388)</a>.
+For an example of this issue and the resolution, see this issue on GitHub:
+[Docker RUN fails to execute shell
+script](https://github.com/moby/moby/issues/24388).
 
 ### Recreate or update your containers after Beta 18 upgrade
 
@@ -264,24 +320,89 @@ Virtualization needs to be enabled in the BIOS. The steps to do so are Vendor
 specific, but typically the BIOS option is called `Virtualization Technology
 (VTx)` or similar.
 
+Once Hyper-V is enabled, it will show up as such on "Turn Windows features on or
+off".
+
+![Hyper-V on Windows features](images/hyper-v-enable-status.png )
+
+#### Hyper-V driver for Docker Machine
+
+Docker for Windows comes with the legacy tool Docker Machine which uses the old
+[`boot2docker.iso`](https://github.com/boot2docker/boot2docker){:
+target="_blank" class="_"}, and the [Microsoft Hyper-V
+driver](/machine/drivers/hyper-v.md) to create local virtual machines. _This is
+tangential to using Docker for Windows_, but if you want to use Docker Machine
+to create multiple local VMs, or to provision remote machines, see the [Docker
+Machine](/machine/index.md) topics. We mention this here only in case someone is
+looking for information about Docker Machine on Windows, which requires that
+Hyper-V is enabled, an external network switch is active, and referenced in the
+flags for the `docker-machine create` command [as described in the Docker
+Machine driver example](/machine/drivers/hyper-v.md#example).
+
 ### Virtualization must be enabled
 
 In addition to [Hyper-V](#hyper-v), virtualization must be enabled.
 
-If, at some point, if you manually uninstall Hyper-V or disable virtualization, Docker for Windows will not start.
+If, at some point, if you manually uninstall Hyper-V or disable virtualization,
+Docker for Windows will not start.
 
-Verify that virtualization is enabled on Task Manager.
+Verify that virtualization is enabled by checking the Performance tab on the
+Task Manager.
 
 ![Task Manager](images/win-virtualization-enabled.png)
 
 See also, the user reported issue [Unable to run Docker for Windows on Windows
 10 Enterprise](https://github.com/docker/for-win/issues/74)
 
+### Networking and WiFi problems upon Docker for Windows install
+
+Some users have encountered networking issues during install and startup of
+Docker for Windows. For example, upon install or auto-reboot, network adapters
+and/or WiFi gets disabled. In some scenarios, problems are due to having
+VirtualBox or its network adapters still installed, but in other scenarios this
+is not the case. (See also, Docker for Windows issue on GitHub: [Enabling
+Hyper-V feature turns my wi-fi off
+](https://github.com/docker/for-win/issues/139).)
+
+Here are some steps to take if you encounter similar problems:
+
+1.	Make sure virtualization is enabled, as described in the [Virtualization
+troubleshooting topic](#virtualization-must-be-enabled).
+
+2.	Make sure the Hyper-V is installed and enabled, as described in the previous
+[Hyper-V troubleshooting topic](#hyper-v).
+
+3.	Check your network switches to see if `DockerNAT` is enabled.
+
+	Open the **Hyper-V Manager**. (On Windows 10, just search for the
+	Hyper-V Manager in the search field in the lower left search field.)
+
+	Select the Virtual Switch Manager on the left-side **Actions** panel.
+
+	![Hyper-V manager](images/hyperv-manager.png)
+
+4.	Set up an external network switch. If you plan at any point to use [Docker
+Machine](/machine/overview.md) to set up multiple local VMs, you will need this
+anyway, as described in the topic on the [Hyper-V driver for [Docker
+Machine](/machine/drivers/hyper-v.md#example). You can replace `DockerNAT` with
+this switch.
+
+5.	If previous steps fail to solve the problems, follow steps on the
+[Cleanup README](https://github.com/Microsoft/Virtualization-Documentation/blob/master/windows-server-container-tools/CleanupContainerHostNetworking/README.md).
+
+	>Read full description of consequences before you run Windows cleanup script
+	>
+  >The cleanup command has a `-Cleanup` flag and a
+	 `-ForceDeleteAllSwitches` flag. Be sure to read the whole page
+	 before running any scripts, especially the warnings with regard
+	 to the `-ForceDeleteAllSwitches` option.
+	 {: .warning}
+
 ### Windows containers and Windows Server 2016
 
 If you have questions about how to set up and run Windows containers on Windows
 Server 2016 or Windows 10, see [About Windows containers and Windows Server
-2016](index.md#about-windows-containers-and-windows-server-2016).
+2016](/docker-for-windows/index.md#about-windows-containers-and-windows-server-2016).
 
 A full tutorial is available in [docker/labs](https://github.com/docker/labs) at
 [Getting Started with Windows
@@ -420,7 +541,7 @@ Here is an example command and error message:
 	C:\Program Files\Docker\Docker\Resources\bin\docker.exe: Error while pulling image: Get https://index.docker.io/v1/repositories/library/hello-world/images: dial tcp: lookup index.docker.io on 10.0.75.1:53: no such host.
 	See 'C:\Program Files\Docker\Docker\Resources\bin\docker.exe run --help'.
 
-As an immediate workaround to this problem, reset the DNS server to use the Google DNS fixed address: `8.8.8.8`. You can configure this via the **Settings** -> **Network** dialog, as described in the topic [Network](index.md#network). Docker will automatically restart when you apply this setting, which could take some time.
+As an immediate workaround to this problem, reset the DNS server to use the Google DNS fixed address: `8.8.8.8`. You can configure this via the **Settings** -> **Network** dialog, as described in the topic [Network](/docker-for-windows/index.md#network). Docker will automatically restart when you apply this setting, which could take some time.
 
 We are currently investigating this issue.
 
@@ -454,7 +575,7 @@ You might have stale NAT configurations on the system. You should remove them wi
 You might have stale Network Adapters on the system. You should remove them with the following commands on an elevated Powershell prompt:
 
 ```
-    PS C:\Users\jdoe> vmNetAdapter = Get-VMNetworkAdapter -ManagementOS -SwitchName DockerNAT
+    PS C:\Users\jdoe> $vmNetAdapter = Get-VMNetworkAdapter -ManagementOS -SwitchName DockerNAT
     Get-NetAdapter "vEthernet (DockerNAT)" | ? { $_.DeviceID -ne $vmNetAdapter.DeviceID } | Disable-NetAdapter -Confirm:$False -PassThru | Rename-NetAdapter -NewName "Broken Docker Adapter"
 ```
 
@@ -467,8 +588,8 @@ the adapter.
 
 By default, Docker for Windows uses an internal network prefix of
 `10.0.75.0/24`. Should this clash with your normal network setup, you can change
-the prefix from the **Settings** menu. See the [Network](index.md#network) topic
-under [Settings](index.md#docker-settings).
+the prefix from the **Settings** menu. See the [Network](/docker-for-windows/index.md#network) topic
+under [Settings](/docker-for-windows/index.md#docker-settings).
 
 #### NAT/IP configuration issues on pre Beta 15 versions
 
@@ -476,13 +597,13 @@ As of Beta 15, Docker for Windows is no longer using a switch with a NAT
 configuration. The notes below are left here only for older Beta versions.
 
 As of Beta14, networking for Docker for Windows is configurable through the UI.
-See the [Network](index.md#network) topic under
-[Settings](index.md#docker-settings).
+See the [Network](/docker-for-windows/index.md#network) topic under
+[Settings](/docker-for-windows/index.md#docker-settings).
 
 By default, Docker for Windows uses an internal Hyper-V switch with a NAT
 configuration with a `10.0.75.0/24` prefix. You can change the prefix used (as
 well as the DNS server) via the **Settings** menu as described in the
-[Network](index.md#network) topic.
+[Network](/docker-for-windows/index.md#network) topic.
 
 If you have additional Hyper-V VMs and they are attached to their own NAT
 prefixes, the prefixes need to be managed carefully, due to limitation of the

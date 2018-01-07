@@ -11,11 +11,15 @@ Disallow: /v1.10/
 Disallow: /v1.11/
 Disallow: /v1.12/
 Disallow: /v1.13/
+Disallow: /v17.03/
+Disallow: /v17.06/
 
 # Docker Datacenter archives
+Disallow: /datacenter/dtr/2.2
 Disallow: /datacenter/dtr/2.1
 Disallow: /datacenter/dtr/2.0
 
+Disallow: /datacenter/ucp/2.1
 Disallow: /datacenter/ucp/2.0
 Disallow: /datacenter/ucp/1.1
 

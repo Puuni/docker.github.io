@@ -22,6 +22,20 @@ cannot be adopted as quickly for consistency and compatibility reasons.
 These notes refer to the current and immediately prior releases of the
 CS Engine. For notes on older versions, see the [CS Engine prior release notes archive](prior-release-notes.md).
 
+## CS Engine 1.12.6-cs13
+(28 Jul 2017)
+
+* Fix packaging issue where packages were missing a `containerd` patch.
+  This resolves an issue with a deadlock in containerd related to healtchecks.
+* Fix a deadlock on cancelling healthcecks. [#28462](https://github.com/moby/moby/pull/28462)
+
+## CS Engine 1.12.6-cs12
+(01 Jun 2017)
+
+* Fix an issue where if a volume using the local volume driver which has
+mount options fails to unmount on container exit, the data in the mount may be
+lost if the user attempts to subsequently remove the volume. [#32327](https://github.com/docker/docker/pulls/32327)
+
 ## CS Engine 1.12.6-cs11
 (11 May 2017)
 
@@ -70,7 +84,7 @@ This release addresses the following issues:
 by the updated `selinux-policy` base package from RHEL/CentOS 7.3
 * [#26639](https://github.com/docker/docker/issues/26639) Resolves hostnames passed
 to the local volume driver for nfs mount options.
-* [26111](https://github.com/docker/docker/issues/26111) Fix issue with adding
+* [#26111](https://github.com/docker/docker/issues/26111) Fix issue with adding
 iptables rules due to xtables lock message change.
 
 ## CS Engine 1.12.6-cs6
@@ -121,6 +135,13 @@ This release addresses the following issues:
 to connect to swarm-mode overlay network
 * Various bug fixes in swarm mode networking
 
+## CS Engine 1.11.2-cs8
+(01 Jun 2017)
+
+* Fix an issue where if a volume using the local volume driver which has
+mount options fails to unmount on container exit, the data in the mount may be
+lost if the user attempts to subsequently remove the volume. [#32327](https://github.com/docker/docker/pulls/32327)
+
 ## CS Engine 1.11.2-cs7
 (24 Jan 2017)
 
@@ -128,10 +149,10 @@ This release addresses the following issues:
 
 * [#26639](https://github.com/docker/docker/issues/26639) Resolves hostnames passed
 to the local volume driver for nfs mount options.
-* [26111](https://github.com/docker/docker/issues/26111) Fix issue with adding
+* [#26111](https://github.com/docker/docker/issues/26111) Fix issue with adding
 iptables rules due to xtables lock message change.
 * [#1572](https://github.com/docker/libnetwork/issues/1572) Fix daemon panic
-* [1130](https://github.com/docker/libnetwork/pull/1130) Fix IPAM out of sync
+* [#1130](https://github.com/docker/libnetwork/pull/1130) Fix IPAM out of sync
 issue on ungraceful shutdown.
 
 ## CS Engine 1.11.2-cs6

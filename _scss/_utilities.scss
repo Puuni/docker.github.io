@@ -60,6 +60,36 @@ i.fa.fa-outdent {
 
 
 /*
+*
+* Inline graphics and icons (like the whale menu icon in d4mac, d4win)
+*
+*/
+
+img.inline {
+    display: inline;
+}
+
+
+/*
+*
+* Bootstrap expand/collapse accordions
+*
+*/
+
+.panel-heading .chevron:after {
+    content: "\f0d8";
+}
+
+.panel-heading.collapsed .chevron:after {
+    content: "\f0d7";
+}
+
+.panel-heading:hover{
+    background-color: #fafdfe;
+}
+
+
+/*
 * Search *********************************************************************
 *
 */
@@ -228,7 +258,8 @@ div#autocompleteResults span {
 {
   list-style-type: none;
   width: 400px;
-  padding:0px;
+/* commented out 0px padding to allow inherit padding, search results on autocompleteList were getting smashed up against left margin due to this */
+/*  padding:0px; */
   margin-bottom: 0px;
 }
 .autoCompleteResult {
@@ -259,4 +290,3 @@ div#autocompleteResults span {
 input.gsc-search-button, input.gsc-search-button:hover, input.gsc-search-button:focus {
     display: none!important;
 }
-

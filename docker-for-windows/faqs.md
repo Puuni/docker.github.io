@@ -129,9 +129,9 @@ No, at this point, Docker for Windows does not enable you to control (`chmod`)
 the Unix-style permissions on [shared
 volumes](/docker-for-windows/index.md#shared-drives) for deployed containers,
 but rather sets permissions to a default value of
-[0770](http://permissions-calculator.org/decode/0770/) (`read`, `write`,
-`execute` permissions for `user` and `group`, none for other) which is not
-configurable.
+[0755](http://permissions-calculator.org/decode/0755/)
+(`read`, `write`, `execute` permissions for `user`, `read` and `execute`
+for `group`) which is not configurable.
 
 For workarounds and to learn more, please see [Permissions errors on data
 directories for shared
@@ -161,17 +161,44 @@ To learn more about the reasons for this limitation, see the following discussio
 ### How do I add custom CA certificates?
 
 Starting with Docker for Windows 1.12.1, 2016-09-16 (Stable) and Beta 26
-(2016-09-14 1.12.1-beta26), all trusted CAs (root or intermediate) are
-supported. Docker recognizes certs stored under Trust Root Certification
-Authorities or Intermediate Certification Authorities.
+(2016-09-14 1.12.1-beta26), all trusted Certificate Authorities (CA) (root or
+intermediate) are supported. Docker recognizes certs stored under Trust Root
+Certification Authorities or Intermediate Certification Authorities.
 
 Docker for Windows creates a certificate bundle of all user-trusted CAs based on
 the Windows certificate store, and appends it to Moby trusted certificates. So
 if an enterprise SSL certificate is trusted by the user on the host, it will be
 trusted by Docker for Windows.
 
-To learn more, see the GitHub issue [Allow user to add custom Certificate
-Authorities](https://github.com/docker/for-win/issues/48).
+To learn more about how to install a CA root certificate for the registry, see
+[Verify repository client with certificates](/engine/security/certificates.md)
+in the Docker Engine topics.
+
+### How do I add client certificates?
+
+Starting with Docker for Windows 17.06.0-ce, you do not have to push your
+certificates with `git` commands anymore. You can put your client certificates
+in `~/.docker/certs.d/<MyRegistry>:<Port>/client.cert` and
+`~/.docker/certs.d/<MyRegistry>:<Port>/client.key`.
+
+When the Docker for Windows application starts up, it copies the
+`~/.docker/certs.d` folder on your Windows system to the `/etc/docker/certs.d`
+directory on Moby (the Docker for Windows virtual machine running on Hyper-V).
+
+> * You need to restart Docker for Windows after making any changes to
+ the keychain or to the `~/.docker/certs.d` directory in order for
+ the changes to take effect.
+>
+> * The registry cannot be listed as an _insecure registry_ (see [Docker
+Daemon](/docker-for-windows/index.md#docker-daemon)). Docker for Windows will
+ignore certificates listed under insecure registries, and will not send client
+certificates. Commands like `docker run` that attempt to pull from
+the registry will produce error messages on the command line, as well as on the
+registry.
+
+To learn more about how to set the client TLS certificate for verification, see
+[Verify repository client with certificates](/engine/security/certificates.md)
+in the Docker Engine topics.
 
 ### Why does Docker for Windows sometimes lose network connectivity (e.g., `push`/`pull` doesn't work)?
 
@@ -196,12 +223,12 @@ Started topic.
 
 To learn more about using Docker for Windows and Docker Machine, see
 [What to know before you install](install.md#what-to-know-before-you-install) in the Getting Started topic. For more about Docker Machine itself, see
-[What is Docker Machine?](/machine/overview.md#what-is-docker-machine)
+[What is Docker Machine?](/machine/overview.md#what-is-docker-machine), and the [Hyper-V driver](/machine/drivers/hyper-v.md) for Docker Machine.
 
 ### How do I run Windows containers on Docker on Windows Server 2016?
 
 See [About Windows containers and Windows Server
-2016](index.md#about-windows-containers-and-windows-server-2016).
+2016](/docker-for-windows/index.md#about-windows-containers-and-windows-server-2016).
 
 A full tutorial is available in [docker/labs](https://github.com/docker/labs) at
 [Getting Started with Windows

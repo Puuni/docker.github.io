@@ -1,3 +1,6 @@
+amd64: |
+  AMD64 is AMD's 64-bit extension of Intel's x86 architecture, and is also
+  referred to as x86_64 (or x86-64).
 aufs: |
   aufs (advanced multi layered unification filesystem) is a Linux [filesystem](#filesystem) that
   Docker supports as a storage backend. It implements the
@@ -6,7 +9,9 @@ base image: |
   An image that has no parent is a **base image**.
 boot2docker: |
   [boot2docker](http://boot2docker.io/) is a lightweight Linux distribution made
-  specifically to run Docker containers. The boot2docker management tool for Mac and Windows was deprecated and replaced by [`docker-machine`](#machine) which you can install with the Docker Toolbox.
+  specifically to run Docker containers. The boot2docker management tool for Mac
+  and Windows was deprecated and replaced by [`docker-machine`](#machine) which
+  you can install with the Docker Toolbox.
 btrfs: |
   btrfs (B-tree file system) is a Linux [filesystem](#filesystem) that Docker
   supports as a storage backend. It is a [copy-on-write](http://en.wikipedia.org/wiki/Copy-on-write)
@@ -21,6 +26,10 @@ cgroups: |
   of processes. Docker relies on cgroups to control and isolate resource limits.
 
   *Also known as : control groups*
+collection: |
+  A collection is a group of swarm resources that Docker EE uses for role-based
+  access control. Collections enable organizing permissions for resources like
+  nodes, services, containers, volumes, networks, and secrets. [Learn how to manage collections](/datacenter/ucp/2.2/guides/access-control/manage-access-with-collections/).
 Compose: |
   [Compose](https://github.com/docker/compose) is a tool for defining and
   running complex applications with Docker. With compose, you define a
@@ -32,7 +41,7 @@ Compose: |
 copy-on-write: |
   Docker uses a
   [copy-on-write](/engine/userguide/storagedriver/imagesandcontainers/#/the-copy-on-write-strategy)
-  technique and a [union file system](#union-file-system) for both images and
+  technique and a [union file system](#union file system) for both images and
   containers to optimize resources and speed performance. Multiple copies of an
   entity share the same instance and each one makes only specific changes to its
   unique layer.
@@ -67,18 +76,19 @@ Docker: |
   develop, ship, and run applications
   - The docker daemon process running on the host which manages images and containers
   (also called Docker Engine)
-Docker Datacenter: |
-  The Docker Datacenter is subscription-based service enabling enterprises to leverage a
-  platform built by Docker, for Docker. The Docker native tools are integrated to create
-  an on premises CaaS platform, allowing organizations to save time and seamlessly take
-  applications built in dev to production.
+Docker Enterprise Edition: |
+  Docker Enterprise Edition (Docker EE) is a platform to build, ship, and run
+  containerized applications, that you can deploy in the cloud or on-premise. It
+  includes a tested and certified version of Docker, web UIs for managing
+  your app resources, and support.
 Docker for Mac: |
-  [Docker for Mac](/docker-for-mac/) is an easy-to-install,
-  lightweight Docker development environment designed specifically for the Mac. A
-  native Mac application, Docker for Mac uses the macOS Hypervisor framework,
-  networking, and filesystem. It's the best solution if you want to build, debug,
-  test, package, and ship Dockerized applications on a Mac. Docker for Mac
-  supersedes [Docker Toolbox](#toolbox) as state-of-the-art Docker on macOS.
+  [Docker for Mac](/docker-for-mac/) is an easy-to-install, lightweight
+  Docker development environment designed specifically for the Mac. A native
+  Mac application, Docker for Mac uses the macOS Hypervisor
+  framework, networking, and filesystem. It's the best solution if you want
+  to build, debug, test, package, and ship Dockerized applications on a
+  Mac. Docker for Mac supersedes [Docker Toolbox](#toolbox) as
+  state-of-the-art Docker on macOS.
 Docker for Windows: |
   [Docker for Windows](/docker-for-windows/) is an
   easy-to-install, lightweight Docker development environment designed
@@ -130,7 +140,7 @@ ENTRYPOINT: |
     ```
 
   In practice, `ENTRYPOINT` is not often overridden. However, specifying the
-  `ENTRYPOINT` can make your images more fiexible and easier to reuse.
+  `ENTRYPOINT` can make your images more flexible and easier to reuse.
 filesystem: |
   A file system is the method an operating system uses to name files
   and assign them locations for efficient storage and retrieval.
@@ -140,6 +150,11 @@ filesystem: |
   - Linux : ext4, aufs, btrfs, zfs
   - Windows : NTFS
   - macOS : HFS+
+grant: |
+  A grant enables role-based access control for managing how users and
+  organizations access Docker EE swarm resources. A grant is made up of a
+  subject, a role, and a collection. For more about grants and role-based access
+  control, see [Grant permissions to users based on roles](/datacenter/ucp/2.2/guides/access-control/grant-permissions/).
 image: |
   Docker images are the basis of [containers](#container). An Image is an
   ordered collection of root filesystem changes and the corresponding
@@ -148,8 +163,8 @@ image: |
   does not have state and it never changes.
 Kitematic: |
   A legacy GUI, bundled with [Docker Toolbox](#toolbox), for managing Docker
-  containers. We recommend upgrading to [Docker for Mac](#docker-for-mac) or
-  [Docker for Windows](#docker-for-windows/), which have superseded Kitematic.
+  containers. We recommend upgrading to [Docker for Mac](#docker for Mac) or
+  [Docker for Windows](#docker for Windows), which have superseded Kitematic.
 layer: |
   In an image, a layer is modification to the image, represented by an instruction in the
   Dockerfile. Layers are applied in sequence to the base image to create the final image.
@@ -163,7 +178,7 @@ libcontainer: |
   after the container is created.
 libnetwork: |
   libnetwork provides a native Go implementation for creating and managing container
-  network namespaces and other network resources. It manage the networking lifecycle
+  network namespaces and other network resources. It manages the networking lifecycle
   of the container performing additional operations after the container is created.
 link: |
   links provide a legacy interface to connect Docker containers running on the
@@ -178,11 +193,11 @@ Machine: |
   *Also known as : docker-machine*
 namespace: |
   A [Linux namespace](http://man7.org/linux/man-pages/man7/namespaces.7.html)
-  is a Linux kernel feature that isolates and vitualizes system resources. Processes which restricted to
+  is a Linux kernel feature that isolates and virtualizes system resources. Processes which restricted to
   a namespace can only interact with resources or processes that are part of the same namespace. Namespaces
   are an important part of Docker's isolation model. Namespaces exist for each type of
   resource, including `net` (networking), `mnt` (storage), `pid` (processes), `uts` (hostname control),
-  and `user` (UID mapping). For more information about namespaces, see [Docker run reference](/engine/reference/run.md)
+  and `user` (UID mapping). For more information about namespaces, see [Docker run reference](/engine/reference/run/)
   and [Introduction to user namespaces](https://success.docker.com/KBase/Introduction_to_User_Namespaces_in_Docker_Engine).
 node: |
   A [node](/engine/swarm/how-swarm-mode-works/nodes/) is a physical or virtual
@@ -199,11 +214,16 @@ overlay storage driver: |
   OverlayFS is a [filesystem](#filesystem) service for Linux which implements a
   [union mount](http://en.wikipedia.org/wiki/Union_mount) for other file systems.
   It is supported by the Docker daemon as a storage driver.
+parent image: |
+  An image's **parent image** is the image designated in the `FROM` directive
+  in the image's Dockerfile. All subsequent commands are applied to this parent
+  image. A Dockerfile with no `FROM` directive has no parent image, and is called
+  a **base image**.
 registry: |
   A Registry is a hosted service containing [repositories](#repository) of [images](#image)
   which responds to the Registry API.
 
-  The default registry can be accessed using a browser at [Docker Hub](#docker-hub)
+  The default registry can be accessed using a browser at [Docker Hub](#docker hub)
   or using the `docker search` command.
 repository: |
   A repository is a set of Docker images. A repository can be shared by pushing it
@@ -212,9 +232,22 @@ repository: |
 
   Here is an example of the shared [nginx repository](https://hub.docker.com/_/nginx/)
   and its [tags](https://hub.docker.com/r/library/nginx/tags/).
+role: |
+  A role is a set of permitted API operations on a collection of Docker EE swarm
+  resources. As part of a grant, a role is assigned to a subject (a user, team, or
+  organization) and a collection. For more about roles, see [Roles and
+  permission levels](/datacenter/ucp/2.2/guides/access-control/permission-levels/).
+role-based access control: |
+  Role-based access control enables managing how Docker EE users can access
+  swarm resources. UCP administrators create grants to control how users access
+  resource collections. A grant is made up of a subject, a role, and a collection.
+  A grant defines who (subject) has how much access (role) to a set of resources
+  (collection). For more about role-based access control, see
+  [Authentication](/datacenter/ucp/2.2/guides/access-control/).
 SSH: |
-  SSH (secure shell) is a secure protocol for accessing remote machines and applications. It
-  provides authentication and encrypts data communication over insecure networks such as the Internet. SSH uses public/private key pairs to authenticate logins.
+  SSH (secure shell) is a secure protocol for accessing remote machines and applications.
+  It provides authentication and encrypts data communication over insecure networks such
+  as the Internet. SSH uses public/private key pairs to authenticate logins.
 service: |
   A [service](/engine/swarm/how-swarm-mode-works/services/) is the definition of how
   you want to run your application containers in a swarm. At the most basic level
@@ -237,10 +270,14 @@ service discovery: |
   You don’t need to expose service-specific ports to make the service available to
   other services on the same overlay network. The swarm’s internal load balancer
   automatically distributes requests to the service VIP among the active tasks.
+subject: |
+  A subject represents a user, team, or organization in Docker EE. A subject is
+  granted a role for access to a collection of swarm resources.
+  For more about role-based access, see [Authentication](/datacenter/ucp/2.2/guides/access-control/).
 swarm: |
-  A [swarm](/engine/swarm/) is a cluster of one or more Docker Engines running in [swarm mode](#swarm-mode).
+  A [swarm](/engine/swarm/) is a cluster of one or more Docker Engines running in [swarm mode](#swarm mode).
 Docker Swarm: |
-  Do not confuse [Docker Swarm](https://github.com/docker/swarm) with the [swarm mode](#swarm-mode) features in Docker Engine.
+  Do not confuse [Docker Swarm](https://github.com/docker/swarm) with the [swarm mode](#swarm mode) features in Docker Engine.
 
   Docker Swarm is the name of a standalone native clustering tool for Docker.
   Docker Swarm pools together several Docker hosts and exposes them as a single
@@ -322,3 +359,7 @@ volume: |
 
   - An **anonymous volume** is similar to a named volume, however, it can be difficult, to refer to
     the same volume over time when it is an anonymous volumes. Docker handle where the files are stored.
+x86_64: |
+  x86_64 (or x86-64) refers to a 64-bit instruction set invented by AMD as an
+  extension of Intel's x86 architecture. AMD calls its x86_64 architecture,
+  AMD64, and Intel calls its implementation, Intel 64.

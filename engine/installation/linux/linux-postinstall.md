@@ -2,6 +2,8 @@
 description: Optional post-installation steps for Linux
 keywords: Docker, Docker documentation, requirements, apt, installation, ubuntu, install, uninstall, upgrade, update
 title: Post-installation steps for Linux
+redirect_from:
+- /engine/installation/linux/docker-ee/linux-postinstall/
 ---
 
 
@@ -40,7 +42,7 @@ To create the `docker` group and add your user:
 
 3.  Log out and log back in so that your group membership is re-evaluated.
 
-    If testing on a virtual machine, it may be necessary to restart the virtual machine for changes to take affect.
+    If testing on a virtual machine, it may be necessary to restart the virtual machine for changes to take effect.
 
     On a desktop Linux environment such as X Windows, log out of your session completely and then log back in.
 
@@ -52,6 +54,26 @@ To create the `docker` group and add your user:
 
     This command downloads a test image and runs it in a container. When the
     container runs, it prints an informational message and exits.
+
+    If you initially ran Docker CLI commands using `sudo` before adding
+    your user to the `docker` group, you may see the following error,
+    which indicates that your `~/.docker/` directory was created with
+    incorrect permissions due to the `sudo` commands.
+
+    ```none
+    WARNING: Error loading config file: /home/user/.docker/config.json -
+    stat /home/user/.docker/config.json: permission denied
+    ```
+
+    To fix this problem, either remove the `~/.docker/` directory
+    (it will be recreated automatically, but any custom settings
+    will be lost), or change its ownership and pemissions using the
+    following commands:
+
+    ```bash
+    $ sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+    $ sudo chmod g+rwx "/home/$USER/.docker" -R
+    ```
 
 ## Configure Docker to start on boot
 
@@ -218,7 +240,7 @@ can change the location of the configuration file using the `--config-file`
 daemon flag. The documentation below assumes the configuration file is located
 at `/etc/docker/daemon.json`.
 
-1. .  Create or edit the Docker daemon configuration file, which defaults to
+1.  Create or edit the Docker daemon configuration file, which defaults to
     `/etc/docker/daemon.json` file, which controls the Docker daemon
     configuration.
 
@@ -316,70 +338,48 @@ to configure your firewall to allow incoming connections on the Docker port,
 which defaults to `2376` if TLS encrypted transport is enabled or `2375`
 otherwise.
 
-#### Specific instructions for UFW
+Two common firewall daemons are
+[UFW (Uncomplicated Firewall)](https://help.ubuntu.com/community/UFW) (often
+used for Ubuntu systems) and [firewalld](http://www.firewalld.org/) (often used
+for RPM-based systems). Consult the documentation for your OS and firewall, but
+the following information might help you get started. These options are fairly
+permissive and you may want to use a different configuration that locks your
+system down more.
 
-[UFW (Uncomplicated Firewall)](https://help.ubuntu.com/community/UFW) drops all
-forwarding traffic and all incoming traffic by default. If you want to access
-the Docker Remote API from another host and you have enabled remote access, you
-need to configure UFW to allow incoming connections on the Docker port, which
-defaults to `2376` if TLS encrypted transport is enabled or `2375` otherwise. By
-default, Docker runs **without** TLS enabled. If you do not use TLS, you are
-strongly discouraged from allowing access to the Docker Remote API from remote
-hosts, to prevent remote privilege-escalation attacks.
+- **UFW**: Set `DEFAULT_FORWARD_POLICY="ACCEPT"` in your configuration.
 
-To configure UFW and allow incoming connections on the Docker port:
+- **firewalld**: Add rules similar to the following to your policy (one for
+  incoming requests and one for outgoing requests). Be sure the interface names
+  and chain names are correct.
 
-1.  Verify that UFW is enabled.
-
-    ```bash
-    $ sudo ufw status
-    ```
-
-    If `ufw` is not enabled, the remaining steps will not be helpful.
-
-2.  Edit the UFW configuration file, which is usually `/etc/default/ufw` or
-    `/etc/sysconfig/ufw`. Set the `DEFAULT_FORWARD_POLICY` policy to `ACCEPT`.
-
-    ```none
-    DEFAULT_FORWARD_POLICY="ACCEPT"
-    ```
-
-    Save and close the file.
-
-3.  If you need to enable access to the Docker Remote API from external hosts
-    and understand the security implications (see the section before this
-    procedure), then configure UFW to allow incoming connections on the Docker port,
-    which is `2375` if you do not use TLS, and `2376` if you do.
-
-    ```bash
-    $ sudo ufw allow 2376/tcp
-    ```
-
-4.  Reload UFW.
-
-    ```bash
-    $ sudo ufw reload
-    ```
+  ```xml
+  <direct>
+     [ <rule ipv="ipv6" table="filter" chain="FORWARD_direct" priority="0"> -i zt0 -j ACCEPT </rule> ]
+     [ <rule ipv="ipv6" table="filter" chain="FORWARD_direct" priority="0"> -o zt0 -j ACCEPT </rule> ]
+  </direct>
+  ```
 
 ### `Your kernel does not support cgroup swap limit capabilities`
 
-You may see messages similar to the following when working with an image:
+On Ubuntu or Debian hosts, You may see messages similar to the following when
+working with an image.
 
 ```none
 WARNING: Your kernel does not support swap limit capabilities. Limitation discarded.
 ```
 
-If you don't need these capabilities, you can ignore the warning. You can
-enable these capabilities in your kernel by following these instructions. Memory
-and swap accounting incur an overhead of about 1% of the total available
-memory and a 10% overall performance degradation, even if Docker is not running.
+This warning does not occur on RPM-based systems, which enable these
+capabilities by default.
 
-1.  Log into Ubuntu as a user with `sudo` privileges.
+If you don't need these capabilities, you can ignore the warning. You can enable
+these capabilities on Ubuntu or Debian by following these instructions. Memory
+and swap accounting incur an overhead of about 1% of the total available memory
+and a 10% overall performance degradation, even if Docker is not running.
 
-2.  Edit the `/etc/default/grub` file.
+1.  Log into the Ubuntu or Debian host as a user with `sudo` privileges.
 
-3.  Add or edit the `GRUB_CMDLINE_LINUX` line to add the following two key-value
-    pairs:
+2.  Edit the `/etc/default/grub` file. Add or edit the `GRUB_CMDLINE_LINUX` line
+    to add the following two key-value pairs:
 
     ```none
     GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"
@@ -387,7 +387,7 @@ memory and a 10% overall performance degradation, even if Docker is not running.
 
     Save and close the file.
 
-4.  Update GRUB.
+3.  Update GRUB.
 
     ```bash
     $ sudo update-grub
@@ -396,8 +396,7 @@ memory and a 10% overall performance degradation, even if Docker is not running.
     If your GRUB configuration file has incorrect syntax, an error will occur.
     In this case, repeat steps 3 and 4.
 
-6.  Reboot your system. Memory and swap accounting are enabled and the warning
-    does not occur.
+    The changes will take effect when the system is rebooted.
 
 ## Next steps
 

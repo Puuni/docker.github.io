@@ -24,7 +24,7 @@ You can click a resource from the Dashboard and find the subscription ID under
 **Billing -> Subscriptions -> Subscription ID** or simply click
 **Subscriptions**, then click a subscription in the list to drill down.
 
-![](images/azure-subscription-id.png)
+![Azure subscriptions page](images/azure-subscription-id.png)
 
 When you are ready to add your subscription ID to Docker Cloud,
 copy it from your Azure Dashboard.
@@ -33,18 +33,25 @@ copy it from your Azure Dashboard.
 
 Go to Docker Cloud to connect the account.
 
-1. In Docker Cloud, click the account menu at upper right and select **Cloud settings**.
-2. In the **Service Providers** section, click the plug icon next to Microsoft Azure.
+1.  In Docker Cloud, click the account menu at the upper right and
+select **Cloud settings**.
 
-    ![](images/azure-id-wizard.png)
+2.  In the **Service Providers** section, click the plug icon next to
+Microsoft Azure.
 
-3. Provide your subscription ID and click **Save**.
+    ![Enter Azure subscription ID popup](images/azure-id-wizard.png)
+
+    >**Tip:** If you are a member of an Azure Organization, your
+    administrator must first link to Docker Cloud as described in
+    [Link an Azure Organization as Global Admin](#link-an-azure-organization-as-global-admin).
+
+3.  Provide your subscription ID and click **Save**.
 
     This grants Docker Cloud access to your Microsoft Azure account, and links
     the two accounts. Your Azure login credentials will automatically populate
     to Docker Cloud under **Service Providers -> Microsoft Azure**.
 
-    ![](images/azure-creds-cloud.png)
+    ![Microsoft Azure entry in Service providers list](images/azure-creds-cloud.png)
 
 ## Enable your Azure subscription for Docker Cloud
 
@@ -72,6 +79,31 @@ You need to verify Microsoft Azure terms of use and manually enable your Azure s
 
 You are now ready to deploy a swarm!
 
+## Link an Azure Organization as Global Admin
+
+For members of Azure Organizations, your gobal administrator first needs to link
+their account and grant permissions to Docker Cloud for the organization as a
+whole. Then, you can link your individual user account to Docker Cloud with your
+subscription ID.
+
+The Global Admin steps are as follows:
+
+1.  Go to [Microsoft Azure](https://portal.azure.com/), find your
+    Subscription ID for Global Admin rights (**Azure -> Billing ->
+    Subscriptions -> Subscriptions ID**), and copy the ID.
+
+2.  On Docker Cloud, go to **Cloud Settings -> Service Providers**.
+
+    ![](images/azure-global-admin-plugin.png)
+
+3. Click **Global Admin**, paste your Global Admin Subscription ID from
+Azure into the field, and click **Save**.
+
+    ![](images/azure-global-admin-permissions.png)
+
+   Azure Organization members can now link their user accounts to
+   Docker Cloud per the individual user instructions above.
+
 ## Where to go next
 
 **Ready to create swarms on Azure?** See [Create a new swarm on Microsoft Azure in Docker Cloud](create-cloud-swarm-azure.md).
@@ -81,3 +113,7 @@ process. If you haven't done so yet, check out how to [Set up SSH
 keys](ssh-key-setup.md).
 
 You can get an overivew of topics on [swarms in Docker Cloud](index.md).
+
+**Using Standard Mode to managing Docker nodes on Azure?** If you are
+setting up nodes on Azure in [Standard Mode](/docker-cloud/standard/),
+go back to [What's next in Standard Mode](/docker-cloud/infrastructure/link-azure.md##whats-next).

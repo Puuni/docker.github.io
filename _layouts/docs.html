@@ -1,12 +1,37 @@
 <!-- Page generated {{ site.time }} -->
 <!-- relative link basehrefs -->
-{% if page.path contains "index.md" %} {% capture basehref %}{{ page.url }}{% endcapture %} {% else %} {% assign crumbs = page.url | split: '/' %} {% assign stoppingpoint = crumbs | size | minus: 1 %} {% for crumb in crumbs %} {% if forloop.index == stoppingpoint
-%} {% capture basehref %}{{basehref}}{{ crumb }}/{% endcapture %} {% break %} {% else %} {% capture basehref %}{{basehref}}{{ crumb }}/{% endcapture %} {% endif %} {% endfor %} {% endif %}
+{% if page.path contains "index.md" %}
+	{% capture basehref %}{{ page.url }}{% endcapture %}
+{% else %}
+	{% assign crumbs = page.url | split: '/' %}
+	{% assign stoppingpoint = crumbs | size | minus: 1 %}
+	{% for crumb in crumbs %}
+		{% if forloop.index == stoppingpoint %}
+			{% capture basehref %}{{basehref}}{{ crumb }}/{% endcapture %}
+			{% break %}
+		{% else %}
+			{% capture basehref %}{{basehref}}{{ crumb }}/{% endcapture %}
+		{% endif %}
+	{% endfor %}
+{% endif %}
 <!-- Logic for feedback CC'ing -->
-{% if page.assignee %}{% assign assignee=page.assignee%}{% else %}{% assign assignee=page.defaultassignee%}{% endif %}
+{% if page.assignee %}
+	{% assign assignee=page.assignee%}
+{% else %}
+	{% assign assignee=page.defaultassignee%}
+{% endif %}
 <!-- Logic for 'edit this button' -->
-{% assign edit_url = "https://github.com/docker/docker.github.io/edit/master/" | append: page.path %} {% for entry in site.data.not_edited_here.overrides %} {% if page.url contains entry.path %} {% if entry.source %}{% assign edit_url = entry.source %}{%
-else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %}
+{% assign edit_url = "https://github.com/docker/docker.github.io/edit/master/" | append: page.path %}
+{% for entry in site.data.not_edited_here.overrides %}
+	{% if page.path contains entry.path %}
+		{% if entry.source %}
+			{% assign edit_url = entry.source %}
+		{% else %}
+			{% assign edit_url = "" %}
+		{% endif %}
+	{% break %}
+	{% endif %}
+{% endfor %}
 
 <!-- End of logic for 'edit this button' -->
 
@@ -33,7 +58,7 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 			display: block;
 		}
 	</style>
-	<!-- script async="" defer="" src="//survey.g.doubleclick.net/async_survey?site=k6svi4faiclrdpi5eax4n23dzy"></script -->
+	{% if page.url contains "datacenter" %}<script async="" defer="" src="//survey.g.doubleclick.net/async_survey?site=k6svi4faiclrdpi5eax4n23dzy"></script>{% endif %}
 	<script type="text/javascript">
 	  !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t){var e=document.createElement("script");e.type="text/javascript";e.async=!0;e.src=("https:"===document.location.protocol?"https://":"http://")+"cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(e,n)};analytics.SNIPPET_VERSION="4.0.0";
 	  analytics.load("IWj9D0UpZHZdZUZX9jl98PcpBFWBnBMy");
@@ -49,7 +74,7 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 	<meta property="og:image" content="/favicons/docs@2x.ico"/>
 	<!-- metadata -->
 	<meta property="og:type" content="website"/>
-	<meta property="og:updated_time" content="{% if page.date %}{{ page.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}"/>
+	<meta property="og:updated_time" itemprop="dateUpdated" content="{% if page.date %}{{ page.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}"/>
 	<meta property="og:image" itemprop="image primaryImageOfPage" content="/images/docs@2x.png"/>
 	<meta name="twitter:card" content="summary"/>
 	<meta name="twitter:domain" content="docs.docker.com"/>
@@ -59,7 +84,7 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 	<meta name="twitter:description" property="og:description" itemprop="description" content="{{ content | strip_html | truncatewords: 30}}" />
 	<meta name="twitter:image:src" content="/images/docs@2x.png"/>
 	<meta name="twitter:image:alt" content="Docker Documentation"/>
-	<meta property="article:published_time" content="{% if page.date %}{{ page.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}"/>
+	<meta property="article:published_time" itemprop="datePublished" content="{% if page.date %}{{ page.date | date_to_xmlschema }}{% else %}{{ site.time | date_to_xmlschema }}{% endif %}"/>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="keywords" content="{% if page.keywords %}{{ page.keywords }}{% else %}docker, docker open source, docker platform, distributed applications, microservices, containers, docker containers, docker software, docker virtualization{% endif %}">
@@ -71,8 +96,26 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 	<!-- Go get "Open Sans" font from Google -->
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 	<!-- temp css will be removed -->
-	<link rel="stylesheet" href="/css/temp.css"> {% seo %} {% if page.hide_from_sitemap %}
-	<meta name="robots" content="noindex" />{% endif %}
+	<link rel="stylesheet" href="/css/temp.css">
+	<!-- SEO stuff -->
+	<title>{{ page.title }} | Docker Documentation</title>
+<meta property="og:title" content="{{ page.title }}" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="{{ page.description }}" />
+<meta property="og:description" content="{{ page.description }}" />
+<link rel="canonical" href="{{ page.url }}" />
+<meta property="og:url" content="https://docs.docker.com{{ page.url }}" />
+<meta property="og:site_name" content="Docker Documentation" />
+<script type="application/ld+json">
+{"@context":"http://schema.org","@type":"WebPage","headline":"{{ page.title }}","description":"{{ page.description }}","url":"https://docs.docker.com{{ page.url }}"}</script>
+	<!-- END SEO STUFF -->
+	{% if page.hide_from_sitemap %}<meta name="robots" content="noindex" />{% endif %}
+	<script language="javascript">
+	// Default to assuming this is an archive and hiding some stuff
+	// See js/archive.js and js/docs.js for logic relating to this
+	var isArchive = true;
+	var dockerVersion = 'v{{ site.docker_ce_stable_version }}';
+	</script>
 </head>
 <body ng-app="Docker" ng-controller="DockerController" class="colums">
 	<header>
@@ -90,7 +133,55 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 							{% else %}
 								{% if page.title %}
 							<h1>{{ page.title }}</h1>{% endif %} {% if page.advisory %}
-							<blockquote>{{ site.data.advisories.texts[page.advisory] | markdownify }}</blockquote>{% endif %}{% endif %} {% unless page.tree == false %}{% include read_time.html %}{% endunless %}{{ content }}
+							<blockquote>{{ site.data.advisories.texts[page.advisory] | markdownify }}</blockquote>{% endif %}{% endif %} {% unless page.tree == false %}{% include read_time.html %}{% endunless %}
+							{% if page.enterprise %}{% include ee_dropdown.html %}{% endif %}
+							{% if page.ui_tabs or page.cli_tabs %}
+								{{ page.description | markdownify }}
+
+								{% if page.ui_tabs %}
+
+								<h2>{{ page.title }} in the UI</h2>
+
+								<blockquote>
+								<p>These instructions require Docker Enterprise</p>
+								<p>The UI instructions shown here are for the dashboard provided with
+								<a href="/enterprise/#docker-ee-feature-tiers">Docker Enterprise Standard</a>
+								or higher.</p>
+								</blockquote>
+
+								<ul class="nav nav-tabs">{% for tab in page.ui_tabs %}
+								  <li{% if forloop.first %} class="active"{% endif %}><a data-toggle="tab" data-target="#ui-{{ tab.version | slugify }}" id="ui-tabheader-{{ tab.version | slugify }}">{{ site.tablabels[tab.version] }}{% if tab.orhigher %} (or higher){% endif %}{% if tab.orlower %} (or lower){% endif %}</a></li>{% endfor %}
+								</ul>
+								<div class="tab-content">{% for tab in page.ui_tabs %}
+								  <div id="ui-{{ tab.version | slugify }}" class="tab-pane fade{% if forloop.first %} in active{% endif %}">{% capture thistab %}{% include_relative {{ page.path | split: "/" | last }} version=tab.version ui="true" %}{% endcapture %}{{ thistab | split: "---" | last | markdownify  }}</div>{% endfor %}
+								</div>
+
+								{% endif %}
+								{% if page.cli_tabs %}
+
+								<h2>{{ page.title }} in the CLI</h2>
+
+								<ul class="nav nav-tabs">{% for tab in page.cli_tabs %}
+								  <li{% if forloop.first %} class="active"{% endif %}><a data-toggle="tab" data-target="#cli-{{ tab.version | slugify }}" id="cli-tabheader-{{ tab.version | slugify }}">{{ site.tablabels[tab.version] }}</a></li>{% endfor %}
+								</ul>
+								<div class="tab-content">{% for tab in page.cli_tabs %}
+								  <div id="cli-{{ tab.version | slugify }}" class="tab-pane fade{% if forloop.first %} in active{% endif %}">{% capture thistab %}{% include_relative {{ page.path | split: "/" | last }} version=tab.version cli="true" %}{% endcapture %}{{ thistab | split: "---" | last | markdownify  }}</div>{% endfor %}
+								</div>
+
+								{% endif %}
+
+								{% if page.next_steps %}
+
+								<h2>Next steps</h2>
+
+								<ul>
+								{% for step in page.next_steps %}  <li><a href="{{ step.path }}">{{ step.title }}</a></li>
+								{% endfor %}
+								</ul>
+								{% endif %}
+							{% else %}
+							{{ content }}
+							{% endif %}
 							<!-- tags -->
 							{% unless page.notags == true %}
 							{% assign keywords = page.keywords | split:"," %}
@@ -121,7 +212,7 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 							}
 							</script>
 							{% if page.noratings != true %}
-						  <div style="color:#b9c2cc; text-align: center; margin-top: 150px">
+						  <div id="ratings-div" style="color:#b9c2cc; text-align: center; margin-top: 150px; visibility: hidden">
 								<div id="pd_rating_holder_8453675"></div>
 								<script type="text/javascript">
 									PDRTJS_settings_8453675 = {
@@ -156,12 +247,12 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 								<div class="feedback-links">
 									<ul>
 										{% if edit_url != "" %}
-										<li><a href="{{ edit_url }}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit this page</a></li>{% endif %}
+										<li style="visibility: hidden"><a href="{{ edit_url }}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit this page</a></li>{% endif %}
 										<li><a href="https://github.com/docker/docker.github.io/issues/new?assignee={% if page.assignee %}{{ page.assignee }}{% else %}{{ page.defaultassignee }}{% endif %}&body=File: [{{ page.path }}](https://docs.docker.com{{ page.url }}), CC @{{ assignee }}"
 															class="nomunge"><i class="fa fa-check" aria-hidden="true"></i> Request docs changes</a></li>
 										<li><a href="https://www.docker.com/docker-support-services"><i class="fa fa-question" aria-hidden="true"></i> Get support</a></li>
 										<!-- toggle mode -->
-<!-- 										<li>
+										<li>
 											<div class="toggle-mode">
 												<div class="icon">
 													<i class="fa fa-sun-o" aria-hidden="true"></i>
@@ -176,7 +267,7 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 													<i class="fa fa-moon-o" aria-hidden="true"></i>
 												</div>
 											</div>
-										</li> -->
+										</li>
 									</ul>
 								</div>
 								{% unless page.notoc %} {% assign my_min = page.toc_min | default: site.toc_min | default: 2 %} {% assign my_max = page.toc_max | default: site.toc_max | default: 3 %} {% assign my_name = page.url | default: "unnamed" %}
@@ -215,19 +306,31 @@ else %}{% assign edit_url = "" %}{% endif %} {% break %} {% endif %} {% endfor %
 	<script defer src="/js/menu.js"></script>
 	<script src="/js/jquery.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
+	<!-- Always include the archive.js, but it doesn't do much unless we are an archive -->
+	<script language="javascript">
+	// Default to assuming this is an archive and hiding some stuff
+	// See js/archive.js and js/docs.js for logic relating to this
+	var isArchive = true;
+	var dockerVersion = 'v{{ site.docker_ce_stable_version }}';
+	// In archives, we need to know the page root and we get it from JEKYLL_ENV in the jekyll build command
+	var jekyllEnv = '{{ jekyll.environment }}';
+	// If unset (in non-archive branches), defaults to "development". In that case, reset it to empty
+	if (jekyllEnv == 'development') {
+		jekyllEnv = '';
+	}
+	var pageURL = jekyllEnv + '{{ page.url }}';
+	</script>
+	<script src="/js/archive.js"></script>
 	<script src="/js/stickyfill.min.js"></script>
+	<script defer src="/js/metadata.js"></script>
+	<script src="/js/glossary.js"></script>
+	<script src="/js/collections_tocs.js"></script>
 	<script defer src="/js/docs.js"></script>
+	<script defer src="/js/toc.js"></script>
 	<script language="javascript">
 	jQuery(document).ready(function(){
-			$.getJSON( "/metadata.txt", function( data ) {
-				metadata = data;
 				hookupTOCEvents();
-				$.getJSON( "/glossary.txt", function( data ) {
-					glossary = data;
-					renderTagsPage();
-				});
 			});
-	});
 	</script>
 </body>
 
